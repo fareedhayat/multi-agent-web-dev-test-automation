@@ -1,0 +1,47 @@
+playwright-mcp
+
+# Ignore Python cache and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+.env/
+.venv/
+
+# Ignore test result files and logs
+*.log
+*.tmp
+*.coverage
+htmlcov/
+.coverage.*
+
+# Ignore Playwright browser binaries and test artifacts
+playwright/.cache/
+playwright-report/
+test-results/
+*.png
+*.webm
+
+# Ignore package build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Ignore IDE/editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore user secrets and environment files
+.env.local
+.env.*
+secrets.json
