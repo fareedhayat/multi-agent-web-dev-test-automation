@@ -44,4 +44,5 @@ Thumbs.db
 # Ignore user secrets and environment files
 .env.local
 .env.*
+.env
 secrets.json
