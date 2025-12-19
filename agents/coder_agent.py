@@ -3,13 +3,21 @@ import os
 from typing import Optional
 
 from dotenv import load_dotenv
+from agents.tools.filesystem import (
+    get_file_contents,
+    get_file_info,
+    run_python_file,
+    write_file,
+)
+from agents.tools.planning import create_development_plan
+from agent_framework.anthropic import AnthropicClient
+from anthropic import AsyncAnthropicFoundry
 
 load_dotenv()
 
 ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
 ANTHROPIC_FOUNDRY_DEPLOYMENT = os.getenv("ANTHROPIC_FOUNDRY_DEPLOYMENT")
 ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
-
 
 def build_coder_prompt(requirement_text: str) -> str:
     return (
@@ -19,14 +27,14 @@ def build_coder_prompt(requirement_text: str) -> str:
         f"Requirements:\n{requirement_text}\n"
     )
 
-'''
+"""
 Tools:
-    1. create_development_plan: navigate to requirement/feature_request.md and create a development plan.
-    2. get_file_info: Checks that the artifacts folder is present and other essential things.
-    3. get_file_contents: If already project is created or some files are available then read those files and understand the codebase.
-    4. write_file: according to the plan overwrite the files or create new files and code.
-    5. run_python_file: this tool will run the code and check for any errors or linter warnings.
-'''
+    1. create_development_plan: summarize requirements before coding.
+    2. get_file_info: verify directories/files exist and inspect their shape.
+    3. get_file_contents: read existing source files to understand the codebase.
+    4. write_file: create or overwrite source files according to the plan.
+    5. run_python_file: execute scripts (e.g., tests, linters) to validate output.
+"""
 
 async def run_coder_agent(prompt: str, *, instructions: Optional[str] = None) -> None:
     required = {
@@ -39,14 +47,6 @@ async def run_coder_agent(prompt: str, *, instructions: Optional[str] = None) ->
         print("Missing environment variables: " + ", ".join(missing))
         return
 
-    try:
-        from agent_framework.anthropic import AnthropicClient  # type: ignore
-        from anthropic import AsyncAnthropicFoundry  # type: ignore
-    except ImportError as exc:  # pragma: no cover - dependency missing
-        raise RuntimeError(
-            "agent_framework[anthropic] and anthropic packages must be installed"
-        ) from exc
-
     client = AnthropicClient(
         model_id=ANTHROPIC_FOUNDRY_DEPLOYMENT,
         anthropic_client=AsyncAnthropicFoundry(
@@ -56,16 +56,26 @@ async def run_coder_agent(prompt: str, *, instructions: Optional[str] = None) ->
     )
 
     instructions = instructions or (
-        "You are a coding agent that translates natural language product"
-        " requirements into concrete web application source files. Return"
-        " concise, well-commented code and note any follow-up questions."
+    "You are a coding agent that translates natural language product"
+    " requirements into concrete web application source files. Begin by"
+    " calling create_development_plan, then inspect the workspace with"
+    " get_file_info/get_file_contents before writing code updates. Use"
+    " write_file for modifications and run_python_file to validate when"
+    " applicable. Return concise, well-commented output and note any"
+    " follow-up questions."
     )
 
     async with client.create_agent(
         name="CoderAgent",
         instructions=instructions,
-        tools=[],
-        allow_multiple_tool_calls=False,
+        tools=[
+            create_development_plan,
+            get_file_info,
+            get_file_contents,
+            write_file,
+            run_python_file,
+        ],
+        allow_multiple_tool_calls=True,
     ) as agent:
         thread = agent.get_new_thread()
         print("Agent: ", end="", flush=True)
