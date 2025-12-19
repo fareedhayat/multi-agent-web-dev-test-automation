@@ -15,7 +15,6 @@ _EXTENSION_LANGUAGE_MAP: Dict[str, str] = {
     ".jsx": "jsx",
     ".html": "html",
     ".css": "css",
-    ".scss": "scss",
     ".json": "json",
     ".md": "markdown",
 }
