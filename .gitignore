@@ -1,5 +1,4 @@
 playwright-mcp
-agents/tools/filesystem.py
 
 # Ignore Python cache and temporary files
 __pycache__/
