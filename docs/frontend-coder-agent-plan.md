@@ -5,8 +5,8 @@ Create an autonomous agent that ingests UI requirements and produces frontend co
 
 ## Progress Tracker
 - [x] Phase 1 — Input processing pipeline parses `requirements/feature-request.md` into structured data (screens, components, styling, functionality).
-- [ ] Phase 2 — Planning pipeline converts structured data into a project/file manifest and prepares the output directories.
-- [ ] Phase 3 — Code generation, validation, and file writing tools integrated with Microsoft Agent Framework runtime.
+- [x] Phase 2 — Planning pipeline converts structured data into a project/file manifest and materializes the folder structure under `artifacts/swaphub`.
+- [~] Phase 3 — LLM-backed code generation calls Microsoft Agent Framework’s Anthropic Foundry endpoint (deterministic fallbacks and validation loop still pending).
 
 ## Architecture Plan
 
@@ -75,22 +75,29 @@ Create an autonomous agent that ingests UI requirements and produces frontend co
    def ensure_project_structure(plan: dict) -> None:
        """Create directories listed in plan["directories"]."""
    ```
-3. **Component Generator**
+3. **LLM-Backed Code Artifact Generator (In Progress)**
    ```python
-   def generate_component(component_spec: dict) -> str:
-       """Generates component code based on specifications."""
+   async def generate_code_artifacts(plan: dict, structured_requirements: dict, config: dict, llm_client: object) -> dict:
+       """Render component/page/style source strings via Microsoft Agent Framework Anthropic client with deterministic fallback."""
    ```
-4. **Style Generator**
    ```python
-   def generate_styles(styling_spec: dict) -> str:
-       """Generates CSS/SCSS based on design requirements."""
+   async def generate_component_source(component_spec: dict, structured: dict, config: dict, llm_client: object) -> str:
+       """Produce TypeScript React component code."""
    ```
-5. **File Writer**
    ```python
-   def write_file(path: str, content: str, file_type: str):
-       """Writes generated code to appropriate files."""
+   async def generate_style_source(component_spec: dict, styling_meta: dict, config: dict, llm_client: object) -> str:
+       """Produce CSS Module content from styling guidance."""
    ```
-6. **Code Validator**
+   ```python
+   async def generate_page_source(screen_spec: dict, structured: dict, config: dict, llm_client: object) -> str:
+       """Compose page shell wiring generated components."""
+   ```
+4. **File Writer**
+   ```python
+   def write_generated_files(artifacts: dict) -> list[str]:
+       """Persist generated artifacts to disk, returning written paths."""
+   ```
+5. **Code Validator (Next)**
    ```python
    def validate_code(code: str, language: str) -> dict:
        """Validates syntax and best practices."""
@@ -110,13 +117,22 @@ Create an autonomous agent that ingests UI requirements and produces frontend co
 ## Sample Configuration
 ```python
 AGENT_CONFIG = {
-    "output_directory": "./generated_frontend",
+    "output_directory": Path("artifacts/swaphub"),
     "framework": "react",
     "styling": "css",
     "typescript": True,
-    "template_directory": "./templates",
+    "template_directory": Path("templates"),
     "max_retries": 3,
-    "validation": True
+    "validation": True,
+    "use_llm": True,
+    "llm": {
+        "endpoint": os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT", ""),
+        "deployment": os.getenv("ANTHROPIC_FOUNDRY_DEPLOYMENT", ""),
+        "api_key": os.getenv("ANTHROPIC_FOUNDRY_API_KEY", ""),
+        "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview"),
+        "temperature": 0.15,
+        "max_output_tokens": 1500,
+    },
 }
 ```
 
@@ -149,17 +165,16 @@ def validate_and_retry(func):
 
 ## Example Usage
 ```python
-requirements = """
-Create a user dashboard with:
-1. Navigation bar with logo and menu
-2. Sidebar with user profile
-3. Main content area with data cards
-4. Responsive design for mobile
-"""
+import asyncio
+from pathlib import Path
 
+requirements = Path("requirements/feature-request.md").read_text(encoding="utf-8")
 structured = analyze_requirements(requirements)
 manifest = plan_project_structure(structured, AGENT_CONFIG)
-ensure_project_structure(manifest, AGENT_CONFIG)
+ensure_project_structure(manifest)
+llm_client = build_llm_client(AGENT_CONFIG)
+artifacts = asyncio.run(generate_code_artifacts(manifest, structured, AGENT_CONFIG, llm_client))
+write_generated_files(artifacts)
 ```
 
 ## Feature Request Context
