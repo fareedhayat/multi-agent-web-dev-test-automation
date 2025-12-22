@@ -1,97 +1,205 @@
 import asyncio
-import os
-from typing import Optional
+import json
+import logging
+from pathlib import Path
+from typing import Dict, List
 
 from dotenv import load_dotenv
-from agents.tools.filesystem import (
-    get_file_contents,
-    get_file_info,
-    run_python_file,
-    write_file,
-)
-from agents.tools.planning import create_development_plan
-from agent_framework.anthropic import AnthropicClient
-from anthropic import AsyncAnthropicFoundry
 
 load_dotenv()
 
-ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
-ANTHROPIC_FOUNDRY_DEPLOYMENT = os.getenv("ANTHROPIC_FOUNDRY_DEPLOYMENT")
-ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
+# Following the Microsoft Agent Framework Python quickstart (see
+# https://github.com/microsoft/agent-framework/tree/main/python) we keep the
+# agent pipeline modular and function-based so the next stages can register as
+# Microsoft Agent Framework tools without introducing classes.
 
-def build_coder_prompt(requirement_text: str) -> str:
-    return (
-        "You are a senior front-end engineer. Produce clean, maintainable code\n"
-        "that satisfies the following requirements. If something is unclear,\n"
-        "state the assumptions you are making.\n\n"
-        f"Requirements:\n{requirement_text}\n"
-    )
+AGENT_CONFIG: Dict[str, object] = {
+    "output_directory": Path("artifacts/swaphub"),
+    "framework": "react",
+    "styling": "css",
+    "typescript": True,
+    "template_directory": Path("templates"),
+    "max_retries": 3,
+    "validation": True,
+    "requirements_path": Path("requirements/feature-request.md"),
+}
 
-"""
-Tools:
-    1. create_development_plan: summarize requirements before coding.
-    2. get_file_info: verify directories/files exist and inspect their shape.
-    3. get_file_contents: read existing source files to understand the codebase.
-    4. write_file: create or overwrite source files according to the plan.
-    5. run_python_file: execute scripts (e.g., tests, linters) to validate output.
-"""
+LOGGER = logging.getLogger("frontend_coder_agent")
 
-async def run_coder_agent(prompt: str, *, instructions: Optional[str] = None) -> None:
-    required = {
-        "ANTHROPIC_FOUNDRY_ENDPOINT": ANTHROPIC_FOUNDRY_ENDPOINT,
-        "ANTHROPIC_FOUNDRY_DEPLOYMENT": ANTHROPIC_FOUNDRY_DEPLOYMENT,
-        "ANTHROPIC_FOUNDRY_API_KEY": ANTHROPIC_FOUNDRY_API_KEY,
-    }
-    missing = [name for name, value in required.items() if not value]
-    if missing:
-        print("Missing environment variables: " + ", ".join(missing))
-        return
 
-    client = AnthropicClient(
-        model_id=ANTHROPIC_FOUNDRY_DEPLOYMENT,
-        anthropic_client=AsyncAnthropicFoundry(
-            api_key=ANTHROPIC_FOUNDRY_API_KEY,
-            base_url=ANTHROPIC_FOUNDRY_ENDPOINT,
-        ),
-    )
+def load_requirements_text(requirements_path: Path) -> str:
+    if not requirements_path.exists():
+        raise FileNotFoundError(f"Requirement file not found: {requirements_path}")
+    text = requirements_path.read_text(encoding="utf-8")
+    LOGGER.info("Loaded requirements from %s", requirements_path)
+    return text
 
-    instructions = instructions or (
-    "You are a coding agent that translates natural language product"
-    " requirements into concrete web application source files. Begin by"
-    " calling create_development_plan, then inspect the workspace with"
-    " get_file_info/get_file_contents before writing code updates. Use"
-    " write_file for modifications and run_python_file to validate when"
-    " applicable. Return concise, well-commented output and note any"
-    " follow-up questions."
-    )
 
-    async with client.create_agent(
-        name="CoderAgent",
-        instructions=instructions,
-        tools=[
-            create_development_plan,
-            get_file_info,
-            get_file_contents,
-            write_file,
-            run_python_file,
+def split_markdown_sections(markdown_text: str) -> Dict[str, List[str]]:
+    sections: Dict[str, List[str]] = {}
+    current_header = "overview"
+    sections[current_header] = []
+    for line in markdown_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            header = stripped.lstrip("#").strip().lower().replace(" ", "_")
+            current_header = header or current_header
+            sections.setdefault(current_header, [])
+            continue
+        if not stripped:
+            continue
+        sections.setdefault(current_header, []).append(stripped)
+    return sections
+
+
+def extract_ui_requirements(section_map: Dict[str, List[str]]) -> Dict[str, object]:
+    must_haves = section_map.get("must-haves", [])
+    constraints = section_map.get("constraints", [])
+
+    components = []
+    interactions = []
+    styling_notes = []
+
+    for bullet in must_haves:
+        normalized = bullet.lstrip("- ").strip()
+        if "hero" in normalized.lower():
+            components.append({
+                "name": "HeroSection",
+                "type": "section",
+                "description": normalized,
+            })
+        elif "highlights" in normalized.lower() or "categories" in normalized.lower():
+            components.append({
+                "name": "Highlights",
+                "type": "list",
+                "description": normalized,
+            })
+        elif "footer" in normalized.lower():
+            components.append({
+                "name": "Footer",
+                "type": "footer",
+                "description": normalized,
+            })
+        else:
+            interactions.append(normalized)
+
+    for rule in constraints:
+        note = rule.lstrip("- ").strip()
+        styling_notes.append(note)
+
+    structured = {
+        "screens": [
+            {
+                "name": "MarketplaceLanding",
+                "description": "Single responsive marketing screen for SwapHub marketplace.",
+                "primary_actions": [bullet.lstrip("- ").strip() for bullet in must_haves if "call-to-action" in bullet.lower()],
+            }
         ],
-        allow_multiple_tool_calls=True,
-    ) as agent:
-        thread = agent.get_new_thread()
-        print("Agent: ", end="", flush=True)
-        async for chunk in agent.run_stream(prompt, thread=thread):
-            if chunk.text:
-                print(chunk.text, end="", flush=True)
-        print()
+        "components": components,
+        "styling": {
+            "notes": styling_notes,
+            "accessibility": [note for note in styling_notes if "semantic" in note.lower() or "alt" in note.lower()],
+        },
+        "functionality": interactions,
+        "constraints": constraints,
+    }
+
+    return structured
+
+
+def analyze_requirements(markdown_text: str) -> Dict[str, object]:
+    sections = split_markdown_sections(markdown_text)
+    LOGGER.debug("Parsed sections: %s", list(sections.keys()))
+    structured = extract_ui_requirements(sections)
+    LOGGER.info("Structured requirement payload prepared.")
+    return structured
+
+
+def plan_project_structure(structured_requirements: Dict[str, object], config: Dict[str, object]) -> Dict[str, object]:
+    output_dir = Path(config["output_directory"])
+    typescript = bool(config.get("typescript", True))
+    extension = "tsx" if typescript else "jsx"
+
+    directories = [
+        output_dir,
+        output_dir / "components",
+        output_dir / "pages",
+        output_dir / "styles",
+        output_dir / "assets",
+        output_dir / "utils",
+    ]
+
+    files: List[Dict[str, object]] = []
+
+    for screen in structured_requirements.get("screens", []):
+        screen_name = screen.get("name", "Landing")
+        files.append(
+            {
+                "path": output_dir / "pages" / f"{screen_name}.{extension}",
+                "type": "page",
+                "source": screen,
+            }
+        )
+
+    for component in structured_requirements.get("components", []):
+        comp_name = component.get("name", "Component")
+        files.append(
+            {
+                "path": output_dir / "components" / f"{comp_name}.{extension}",
+                "type": "component",
+                "source": component,
+            }
+        )
+        files.append(
+            {
+                "path": output_dir / "styles" / f"{comp_name}.module.css",
+                "type": "style",
+                "source": structured_requirements.get("styling", {}),
+            }
+        )
+
+    plan = {
+        "base_path": str(output_dir),
+        "directories": [str(directory) for directory in directories],
+        "files": [
+            {
+                "path": str(entry["path"]),
+                "type": entry["type"],
+                "notes": entry.get("source", {}),
+            }
+            for entry in files
+        ],
+        "constraints": structured_requirements.get("constraints", []),
+        "test_id_requirement": "Include data-testid on interactive elements",
+    }
+
+    LOGGER.info(
+        "Generated project plan with %d directories and %d files.",
+        len(directories),
+        len(files),
+    )
+    return plan
+
+
+def ensure_project_structure(plan: Dict[str, object]) -> None:
+    for directory in plan.get("directories", []):
+        path = Path(directory)
+        path.mkdir(parents=True, exist_ok=True)
+        LOGGER.debug("Ensured directory %s", path)
+
+
+async def main() -> None:
+    logging.basicConfig(level=logging.INFO)
+    requirements_path = Path(AGENT_CONFIG["requirements_path"])
+    raw_text = load_requirements_text(requirements_path)
+    structured_payload = analyze_requirements(raw_text)
+    project_plan = plan_project_structure(structured_payload, AGENT_CONFIG)
+    ensure_project_structure(project_plan)
+    print(json.dumps({
+        "structured_requirements": structured_payload,
+        "project_plan": project_plan,
+    }, indent=2))
 
 
 if __name__ == "__main__":
-    requirements = """
-    Build a responsive marketing home page with a hero section, three feature
-    highlights, and a testimonials carousel. Include navigation links for Home,
-    Features, Pricing, and Contact. Ensure all interactive elements have unique
-    data-testid attributes for Playwright tests.
-    """
-
-    coder_prompt = build_coder_prompt(requirements)
-    asyncio.run(run_coder_agent(coder_prompt))
+    asyncio.run(main())
