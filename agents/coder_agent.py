@@ -14,20 +14,8 @@ except ImportError:  # pragma: no cover - optional dependency
 
 load_dotenv()
 
-# Following the Microsoft Agent Framework Python quickstart (see
-# https://github.com/microsoft/agent-framework/tree/main/python) we keep the
-# agent pipeline modular and function-based so the next stages can register as
-# Microsoft Agent Framework tools without introducing classes.
-
 AGENT_CONFIG: Dict[str, object] = {
-    "output_directory": Path("artifacts/swaphub"),
-    "site_mode": "static-site",
-    "framework": "react",
-    "styling": "css",
-    "typescript": True,
-    "template_directory": Path("templates"),
-    "max_retries": 3,
-    "validation": True,
+    "output_directory": Path("artifacts"),
     "requirements_path": Path("requirements/feature-request.md"),
     "use_llm": True,
     "llm": {
@@ -51,201 +39,34 @@ def load_requirements_text(requirements_path: Path) -> str:
     return text
 
 
-def split_markdown_sections(markdown_text: str) -> Dict[str, List[str]]:
-    sections: Dict[str, List[str]] = {}
-    current_header = "overview"
-    sections[current_header] = []
+def trim_text(value: str, limit: int = 5000) -> str:
+    if len(value) <= limit:
+        return value
+    return value[:limit] + "\n..."  # truncated marker keeps prompt concise
+
+
+def extract_metadata(markdown_text: str) -> Dict[str, str]:
+    brand_match = re.search(r"^#\s*(.+)$", markdown_text, flags=re.MULTILINE)
+    brand_name = brand_match.group(1).strip() if brand_match else "Digital Experience"
+    body_lines: List[str] = []
     for line in markdown_text.splitlines():
         stripped = line.strip()
-        if stripped.startswith("#"):
-            header = stripped.lstrip("#").strip().lower().replace(" ", "_")
-            current_header = header or current_header
-            sections.setdefault(current_header, [])
+        if not stripped or stripped.startswith("#"):
             continue
-        if not stripped:
-            continue
-        sections.setdefault(current_header, []).append(stripped)
-    return sections
-
-
-def is_static_mode(config: Dict[str, object]) -> bool:
-    return str(config.get("site_mode", "react")).lower() == "static-site"
-
-
-def extract_ui_requirements(section_map: Dict[str, List[str]]) -> Dict[str, object]:
-    must_haves = section_map.get("must-haves", [])
-    constraints = section_map.get("constraints", [])
-
-    components = []
-    interactions = []
-    styling_notes = []
-
-    for bullet in must_haves:
-        normalized = bullet.lstrip("- ").strip()
-        if "hero" in normalized.lower():
-            components.append({
-                "name": "HeroSection",
-                "type": "section",
-                "description": normalized,
-            })
-        elif "highlights" in normalized.lower() or "categories" in normalized.lower():
-            components.append({
-                "name": "Highlights",
-                "type": "list",
-                "description": normalized,
-            })
-        elif "footer" in normalized.lower():
-            components.append({
-                "name": "Footer",
-                "type": "footer",
-                "description": normalized,
-            })
-        else:
-            interactions.append(normalized)
-
-    for rule in constraints:
-        note = rule.lstrip("- ").strip()
-        styling_notes.append(note)
-
-    structured = {
-        "screens": [
-            {
-                "name": "MarketplaceLanding",
-                "description": "Single responsive marketing screen for SwapHub marketplace.",
-                "primary_actions": [bullet.lstrip("- ").strip() for bullet in must_haves if "call-to-action" in bullet.lower()],
-            }
-        ],
-        "components": components,
-        "styling": {
-            "notes": styling_notes,
-            "accessibility": [note for note in styling_notes if "semantic" in note.lower() or "alt" in note.lower()],
-        },
-        "functionality": interactions,
-        "constraints": constraints,
+        body_lines.append(stripped)
+        if len(body_lines) >= 6:
+            break
+    overview = " ".join(body_lines) or "Landing page introducing the brand."
+    return {
+        "brand_name": brand_name,
+        "overview": overview,
+        "requirements_excerpt": trim_text(markdown_text),
     }
-
-    return structured
-
-
-def analyze_requirements(markdown_text: str) -> Dict[str, object]:
-    sections = split_markdown_sections(markdown_text)
-    LOGGER.debug("Parsed sections: %s", list(sections.keys()))
-    structured = extract_ui_requirements(sections)
-    LOGGER.info("Structured requirement payload prepared.")
-    return structured
-
-
-def plan_project_structure(structured_requirements: Dict[str, object], config: Dict[str, object]) -> Dict[str, object]:
-    output_dir = Path(config["output_directory"])
-    typescript = bool(config.get("typescript", True))
-    extension = "tsx" if typescript else "jsx"
-
-    if is_static_mode(config):
-        directories = [
-            output_dir,
-            output_dir / "assets",
-        ]
-
-        files: List[Dict[str, object]] = [
-            {
-                "path": output_dir / "index.html",
-                "type": "html",
-                "source": structured_requirements,
-            },
-            {
-                "path": output_dir / "styles.css",
-                "type": "css",
-                "source": structured_requirements,
-            },
-            {
-                "path": output_dir / "script.js",
-                "type": "js",
-                "source": structured_requirements,
-            },
-        ]
-    else:
-        directories = [
-            output_dir,
-            output_dir / "components",
-            output_dir / "pages",
-            output_dir / "styles",
-            output_dir / "assets",
-            output_dir / "utils",
-        ]
-
-        files = []
-
-        for screen in structured_requirements.get("screens", []):
-            screen_name = screen.get("name", "Landing")
-            files.append(
-                {
-                    "path": output_dir / "pages" / f"{screen_name}.{extension}",
-                    "type": "page",
-                    "source": screen,
-                }
-            )
-
-        for component in structured_requirements.get("components", []):
-            comp_name = component.get("name", "Component")
-            files.append(
-                {
-                    "path": output_dir / "components" / f"{comp_name}.{extension}",
-                    "type": "component",
-                    "source": component,
-                }
-            )
-            files.append(
-                {
-                    "path": output_dir / "styles" / f"{comp_name}.module.css",
-                    "type": "style",
-                    "source": {
-                        "component": component,
-                        "styling": structured_requirements.get("styling", {}),
-                    },
-                }
-            )
-
-        files.append(
-            {
-                "path": output_dir / "styles" / "global.css",
-                "type": "global_style",
-                "source": structured_requirements.get("styling", {}),
-            }
-        )
-
-    plan = {
-        "base_path": str(output_dir),
-        "directories": [str(directory) for directory in directories],
-        "files": [
-            {
-                "path": str(entry["path"]),
-                "type": entry["type"],
-                "notes": entry.get("source", {}),
-            }
-            for entry in files
-        ],
-        "constraints": structured_requirements.get("constraints", []),
-        "test_id_requirement": "Include data-testid on interactive elements",
-    }
-
-    LOGGER.info(
-        "Generated project plan with %d directories and %d files.",
-        len(directories),
-        len(files),
-    )
-    return plan
-
-
-def ensure_project_structure(plan: Dict[str, object]) -> None:
-    for directory in plan.get("directories", []):
-        path = Path(directory)
-        path.mkdir(parents=True, exist_ok=True)
-        LOGGER.debug("Ensured directory %s", path)
 
 
 def slugify(value: str) -> str:
     lower = re.sub(r"[^a-zA-Z0-9]+", "-", value).strip("-")
-    return lower.lower() or "component"
+    return lower.lower() or "site"
 
 
 def build_llm_client(config: Dict[str, object]) -> Optional[Any]:
@@ -253,21 +74,15 @@ def build_llm_client(config: Dict[str, object]) -> Optional[Any]:
     endpoint = llm_config.get("endpoint", "")
     deployment = llm_config.get("deployment", "")
     api_key = llm_config.get("api_key", "")
-    api_version = llm_config.get("api_version", "2024-12-01-preview")
 
     if not endpoint or not deployment or not api_key:
-        LOGGER.warning("Anthropic Foundry configuration incomplete; falling back to deterministic templates.")
-        return None
+        raise RuntimeError("Anthropic Foundry configuration is incomplete. Please set endpoint, deployment, and api key.")
 
     if AsyncAnthropicFoundry is None:
-        LOGGER.error("anthropic package not installed. Install with 'pip install anthropic'.")
-        return None
+        raise RuntimeError("anthropic package not installed. Install with 'pip install anthropic'.")
 
     LOGGER.info("Initializing AsyncAnthropicFoundry client for deployment '%s'.", deployment)
-    return AsyncAnthropicFoundry(
-        api_key=api_key,
-        base_url=endpoint
-    )
+    return AsyncAnthropicFoundry(api_key=api_key, base_url=endpoint)
 
 
 def extract_text_from_response(response: Any) -> Optional[str]:
@@ -303,9 +118,7 @@ def clean_llm_completion(text: str) -> str:
         if len(lines) >= 2:
             fence = lines[0]
             if fence.startswith("```"):
-                # Remove opening fence and optional language annotation
                 lines = lines[1:]
-                # Drop closing fence if present
                 if lines and lines[-1].strip().startswith("```"):
                     lines = lines[:-1]
                 return "\n".join(lines).strip()
@@ -352,437 +165,339 @@ async def invoke_llm_chat(
     return extract_text_from_response(response)
 
 
-def build_component_prompt(
-    component_spec: Dict[str, object],
-    structured_requirements: Dict[str, object],
-    config: Dict[str, object],
-) -> Dict[str, str]:
-    framework = config.get("framework", "react")
-    styling = config.get("styling", "css")
-    name = component_spec.get("name", "Component")
-    comp_type = component_spec.get("type", "component")
-    description = component_spec.get("description", "")
-    requirement_summary = json.dumps(structured_requirements, indent=2)
-
+def build_site_plan_prompt(requirements_text: str, metadata: Dict[str, str]) -> Dict[str, str]:
     system_prompt = (
-        "You are an expert frontend engineer collaborating via the Microsoft Agent Framework. "
-        "Return only TypeScript React component source code, nothing else."
+        "You are a senior web architect. Respond only with strict JSON."
     )
+    schema = {
+        "project_name": "Human readable name",
+        "project_slug": "kebab-case identifier",
+        "pages": [
+            {
+                "filename": "index.html",
+                "display_name": "Home",
+                "purpose": "Why this page exists",
+                "key_sections": ["Hero", "Highlights"],
+                "interactive_targets": ["accordion"]
+            }
+        ],
+        "assets": {
+            "css": [
+                {
+                    "filename": "styles.css",
+                    "scope": "global",
+                    "notes": "Shared layout, modern styling"
+                }
+            ],
+            "js": [
+                {
+                    "filename": "script.js",
+                    "scope": "global",
+                    "notes": "Progressive enhancement behaviors"
+                }
+            ]
+        },
+        "testing_focus": ["data-testid hooks that must exist"]
+    }
     user_prompt = (
-        "Generate a {framework} functional component named {name}.\n"
-        "Component type: {comp_type}.\n"
-        "Component requirement: {description}.\n"
-        "Overall requirements summary: {summary}.\n"
-        "Styling approach: {styling}.\n"
-        "Constraints: include data-testid attributes for interactive elements and import '../styles/{name}.module.css'."
+        "Design a static website plan for the brand '{brand}'.\n"
+        "Requirements excerpt:\n{requirements}\n\n"
+        "Return JSON matching this schema:\n{schema}\n"
+        "- Ensure filenames end with '.html', '.css', or '.js'.\n"
+        "- Always include an 'index.html' page.\n"
+        "- Keep page and asset counts lean but complete.\n"
+        "Respond with JSON only."
     ).format(
-        framework=framework,
-        name=name,
-        comp_type=comp_type,
-        description=description,
-        summary=requirement_summary,
-        styling=styling,
+        brand=metadata.get("brand_name", "the brand"),
+        requirements=metadata.get("requirements_excerpt", ""),
+        schema=json.dumps(schema, indent=2),
     )
-
     return {"system": system_prompt, "user": user_prompt}
 
 
-def build_style_prompt(component_spec: Dict[str, object], styling_meta: Dict[str, object]) -> Dict[str, str]:
-    component_name = component_spec.get("name", "Component")
-    accessibility = styling_meta.get("accessibility", [])
-    notes = styling_meta.get("notes", [])
-
-    system_prompt = (
-        "You are a senior frontend stylist. Return only CSS module content for the associated component."
-    )
-    user_prompt = (
-        "Create a CSS module for component {component}.\n"
-        "Accessibility guidance: {accessibility}.\n"
-        "General styling notes: {notes}.\n"
-        "Ensure the stylesheet defines classes referenced by the component and supports responsive layouts."
-    ).format(
-        component=component_name,
-        accessibility=", ".join(accessibility) if accessibility else "None",
-        notes=", ".join(notes) if notes else "None",
-    )
-
-    return {"system": system_prompt, "user": user_prompt}
-
-
-def build_page_prompt(screen_spec: Dict[str, object], structured_requirements: Dict[str, object]) -> Dict[str, str]:
-    component_names = [component.get("name", "Component") for component in structured_requirements.get("components", [])]
-    system_prompt = (
-        "You orchestrate React pages for the Microsoft Agent Framework. Return only valid TSX for the page component."
-    )
-    user_prompt = (
-        "Create a React page named {name}Page.\n"
-        "It must import and render the following components in order: {components}.\n"
-        "The page should import '../styles/global.css' and wrap content in <main data-testid='marketplace-landing'>."
-    ).format(
-        name=screen_spec.get("name", "MarketplaceLanding"),
-        components=", ".join(component_names) or "HeroSection, Highlights, Footer",
-    )
-
-    return {"system": system_prompt, "user": user_prompt}
-
-def _find_component(structured_requirements: Dict[str, object], name: str) -> Optional[Dict[str, object]]:
-    for component in structured_requirements.get("components", []):
-        if component.get("name", "").lower() == name.lower():
-            return component
-    return None
-
-async def generate_component_source(
-    component_spec: Dict[str, object],
-    structured_requirements: Dict[str, object],
-    config: Dict[str, object],
-    llm_client: Optional[Any],
-) -> str:
-    if not config.get("use_llm", True):
-        return render_tsx_component(component_spec, config)
-
-    prompts = build_component_prompt(component_spec, structured_requirements, config)
-    completion = await invoke_llm_chat(
-        llm_client,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
-    )
-
-    if completion:
-        return clean_llm_completion(completion)
-
-    return render_tsx_component(component_spec, config)
-
-
-async def generate_style_source(
-    component_spec: Dict[str, object],
-    styling_meta: Dict[str, object],
-    config: Dict[str, object],
-    llm_client: Optional[Any],
-) -> str:
-    if not config.get("use_llm", True):
-        return render_css_module(component_spec, styling_meta)
-
-    prompts = build_style_prompt(component_spec, styling_meta)
-    completion = await invoke_llm_chat(
-        llm_client,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
-    )
-
-    if completion:
-        return clean_llm_completion(completion)
-
-    return render_css_module(component_spec, styling_meta)
-
-
-async def generate_page_source(
-    screen_spec: Dict[str, object],
-    structured_requirements: Dict[str, object],
-    config: Dict[str, object],
-    llm_client: Optional[Any],
-) -> str:
-    if not config.get("use_llm", True):
-        return render_page_tsx(screen_spec, structured_requirements, config)
-
-    prompts = build_page_prompt(screen_spec, structured_requirements)
-    completion = await invoke_llm_chat(
-        llm_client,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
-    )
-
-    if completion:
-        return clean_llm_completion(completion)
-
-    return render_page_tsx(screen_spec, structured_requirements, config)
-
-
-async def generate_static_html_source(
-    structured_requirements: Dict[str, object],
-    config: Dict[str, object],
-    llm_client: Optional[Any],
-) -> str:
-    if not config.get("use_llm", True):
-        return render_static_html(structured_requirements)
-
-    prompts = build_static_html_prompt(structured_requirements)
-    completion = await invoke_llm_chat(
-        llm_client,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
-    )
-
-    if completion:
-        return clean_llm_completion(completion)
-
-    return render_static_html(structured_requirements)
-
-
-async def generate_static_css_source(
-    structured_requirements: Dict[str, object],
-    config: Dict[str, object],
-    llm_client: Optional[Any],
-) -> str:
-    if not config.get("use_llm", True):
-        return render_static_css(structured_requirements)
-
-    prompts = build_static_css_prompt(structured_requirements)
-    completion = await invoke_llm_chat(
-        llm_client,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
-    )
-
-    if completion:
-        return clean_llm_completion(completion)
-
-    return render_static_css(structured_requirements)
-
-
-async def generate_static_js_source(
-    structured_requirements: Dict[str, object],
-    config: Dict[str, object],
-    llm_client: Optional[Any],
-) -> str:
-    if not config.get("use_llm", True):
-        return render_static_js(structured_requirements)
-
-    prompts = build_static_js_prompt(structured_requirements)
-    completion = await invoke_llm_chat(
-        llm_client,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
-    )
-
-    if completion:
-        return clean_llm_completion(completion)
-
-    return render_static_js(structured_requirements)
-
-
-def render_tsx_component(component_spec: Dict[str, object], config: Dict[str, object]) -> str:
-    name = component_spec.get("name", "Component")
-    description = component_spec.get("description", "")
-    comp_type = component_spec.get("type", "section")
-    import_path = f"../styles/{name}.module.css"
-    data_test_id = f"{slugify(name)}-section"
-
-    body_lines: List[str] = []
-
-    if comp_type == "section":
-        body_lines.extend(
-            [
-                "      <header>",
-                f"        <h1 className={{styles.title}}>{description.split(':')[-1].strip() if ':' in description else name}</h1>",
-                f"        <p className={{styles.subtitle}}>{description}</p>",
-                "        <button className={styles.cta} data-testid=\"primary-cta\">Get Started</button>",
-                "      </header>",
-            ]
-        )
-    elif comp_type == "list":
-        body_lines.extend(
-            [
-                "      <section>",
-                f"        <h2 className={{styles.heading}}>{name}</h2>",
-                "        <ul className={styles.list}>",
-                "          <li data-testid=\"highlight-card-1\">Marketplace category placeholder</li>",
-                "          <li data-testid=\"highlight-card-2\">Marketplace category placeholder</li>",
-                "          <li data-testid=\"highlight-card-3\">Marketplace category placeholder</li>",
-                "        </ul>",
-                "      </section>",
-            ]
-        )
-    elif comp_type == "footer":
-        body_lines.extend(
-            [
-                "      <footer>",
-                "        <nav className={styles.links}>",
-                "          <a href='#' data-testid=\"footer-contact\">Contact</a>",
-                "          <a href='#' data-testid=\"footer-policy\">Policies</a>",
-                "        </nav>",
-                "        <p className={styles.copy}>&copy; {new Date().getFullYear()} SwapHub. All rights reserved.</p>",
-                "      </footer>",
-            ]
-        )
+def normalize_asset_entry(entry: Any, fallback_name: str) -> Dict[str, str]:
+    filename = fallback_name
+    scope = "global"
+    notes = ""
+    if isinstance(entry, dict):
+        filename = str(entry.get("filename", filename)).strip() or filename
+        scope = str(entry.get("scope", scope)).strip() or scope
+        notes = str(entry.get("notes", notes)).strip()
     else:
-        body_lines.append(f"      <div className={{styles.block}}>{description}</div>")
-
-    jsx_body = "\n".join(body_lines)
-
-    return (
-        "import React from 'react';\n"
-        f"import styles from '{import_path}';\n\n"
-        f"export function {name}() {{\n"
-        f"  return (\n"
-        f"    <section className={{styles.root}} data-testid=\"{data_test_id}\">\n"
-        f"{jsx_body}\n"
-        "    </section>\n"
-        "  );\n"
-        "}\n"
-    )
+        filename = str(entry).strip() or fallback_name
+    if not filename.endswith(('.css', '.js')):
+        ext = '.css' if fallback_name.endswith('.css') else '.js'
+        filename = f"{slugify(filename)}{ext}"
+    return {
+        "filename": filename,
+        "scope": scope,
+        "notes": notes or ("Global styling" if filename.endswith('.css') else "Global interactions"),
+    }
 
 
-def render_css_module(component_spec: Dict[str, object], styling_meta: Dict[str, object]) -> str:
-    base_rules = [
-        ".root {",
-        "  width: 100%;",
-        "  margin: 0 auto;",
-        "  padding: 2rem 1.5rem;",
-        "  display: flex;",
-        "  flex-direction: column;",
-        "  gap: 1.5rem;",
-        "}",
-    ]
+def normalize_site_plan(plan: Dict[str, Any], metadata: Dict[str, str], config: Dict[str, object]) -> Dict[str, Any]:
+    project_name = plan.get("project_name") or metadata.get("brand_name", "Digital Experience")
+    project_slug = slugify(plan.get("project_slug", project_name))
+    pages = plan.get("pages") if isinstance(plan.get("pages"), list) else []
+    normalized_pages: List[Dict[str, Any]] = []
+    used_filenames: set[str] = set()
 
-    if component_spec.get("type") == "section":
-        base_rules.extend(
-            [
-                ".title {",
-                "  font-size: clamp(2rem, 5vw, 3rem);",
-                "  font-weight: 700;",
-                "}",
-                ".subtitle {",
-                "  max-width: 48ch;",
-                "  color: #3c4043;",
-                "}",
-                ".cta {",
-                "  align-self: flex-start;",
-                "  background-color: #2563eb;",
-                "  color: #ffffff;",
-                "  padding: 0.75rem 1.5rem;",
-                "  border-radius: 999px;",
-                "  border: none;",
-                "}",
-            ]
-        )
-    elif component_spec.get("type") == "list":
-        base_rules.extend(
-            [
-                ".heading {",
-                "  font-size: 1.75rem;",
-                "}",
-                ".list {",
-                "  display: grid;",
-                "  gap: 1rem;",
-                "  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));",
-                "}",
-                ".list li {",
-                "  background: #ffffff;",
-                "  border: 1px solid rgba(15, 23, 42, 0.1);",
-                "  padding: 1.25rem;",
-                "  border-radius: 0.75rem;",
-                "}",
-            ]
-        )
-    elif component_spec.get("type") == "footer":
-        base_rules.extend(
-            [
-                ".links {",
-                "  display: flex;",
-                "  gap: 1rem;",
-                "}",
-                ".copy {",
-                "  color: #64748b;",
-                "  font-size: 0.875rem;",
-                "}",
-            ]
-        )
-
-    accessibility_notes = styling_meta.get("accessibility", [])
-    if accessibility_notes:
-        base_rules.extend(
-            [
-                "a {",
-                "  color: inherit;",
-                "}",
-                "a:focus {",
-                "  outline: 2px solid #2563eb;",
-                "  outline-offset: 4px;",
-                "}",
-            ]
-        )
-
-    base_rules.extend(
-        [
-            "@media (max-width: 768px) {",
-            "  .root {",
-            "    padding: 1.5rem 1rem;",
-            "  }",
-            "}",
+    if not pages:
+        pages = [
+            {
+                "filename": "index.html",
+                "display_name": "Home",
+                "purpose": metadata.get("overview", "Primary landing page."),
+                "key_sections": ["Hero", "Highlights"],
+                "interactive_targets": ["cta"],
+            }
         ]
+
+    for index, raw_page in enumerate(pages):
+        if not isinstance(raw_page, dict):
+            continue
+        filename = str(raw_page.get("filename", "")).strip()
+        if not filename:
+            filename = "index.html" if index == 0 else f"page-{index + 1}.html"
+        if not filename.endswith(".html"):
+            filename = f"{slugify(filename)}.html"
+        base = filename.rsplit(".html", 1)[0]
+        counter = 2
+        while filename.lower() in used_filenames:
+            filename = f"{base}-{counter}.html"
+            counter += 1
+        used_filenames.add(filename.lower())
+        normalized_pages.append(
+            {
+                "filename": filename,
+                "display_name": raw_page.get("display_name") or raw_page.get("title") or raw_page.get("name") or base.replace("-", " ").title(),
+                "purpose": raw_page.get("purpose") or raw_page.get("summary") or metadata.get("overview", ""),
+                "key_sections": raw_page.get("key_sections") or raw_page.get("sections") or [],
+                "interactive_targets": raw_page.get("interactive_targets") or raw_page.get("interactive_elements") or [],
+            }
+        )
+
+    assets = plan.get("assets") if isinstance(plan.get("assets"), dict) else {}
+    css_assets_raw = assets.get("css") if isinstance(assets.get("css"), list) else []
+    js_assets_raw = assets.get("js") if isinstance(assets.get("js"), list) else []
+    normalized_css = [normalize_asset_entry(entry, "styles.css") for entry in css_assets_raw] or [normalize_asset_entry({}, "styles.css")]
+    normalized_js = [normalize_asset_entry(entry, "script.js") for entry in js_assets_raw] or [normalize_asset_entry({}, "script.js")]
+
+    base_path = Path(config["output_directory"]) / project_slug
+
+    plan.update(
+        {
+            "project_name": project_name,
+            "project_slug": project_slug,
+            "pages": normalized_pages,
+            "assets": {"css": normalized_css, "js": normalized_js},
+            "testing_focus": plan.get("testing_focus") or ["data-testid on navigation, CTAs, and interactive widgets"],
+            "base_path": str(base_path),
+        }
     )
+    return plan
 
-    return "\n".join(base_rules) + "\n"
 
+async def generate_site_plan(
+    requirements_text: str,
+    metadata: Dict[str, str],
+    config: Dict[str, object],
+    llm_client: Optional[Any],
+) -> Dict[str, Any]:
+    if not config.get("use_llm", True):
+        raise RuntimeError("LLM usage disabled while generating the site plan.")
+    if llm_client is None:
+        raise RuntimeError("LLM client not initialized. Cannot generate the site plan.")
 
-def render_page_tsx(screen_spec: Dict[str, object], structured_requirements: Dict[str, object], config: Dict[str, object]) -> str:
-    name = screen_spec.get("name", "MarketplaceLanding")
-    components = structured_requirements.get("components", [])
-    component_names = [component.get("name", "Component") for component in components]
-
-    imports = [f"import {{ {comp} }} from '../components/{comp}';" for comp in component_names]
-    imports.append("\nimport '../styles/global.css';")
-
-    body_lines = [
-        "  return (",
-        "    <main data-testid=\"marketplace-landing\">",
-    ]
-
-    for comp in component_names:
-        body_lines.append(f"      <{comp} />")
-
-    body_lines.extend(
-        [
-            "    </main>",
-            "  );",
-        ]
+    prompts = build_site_plan_prompt(requirements_text, metadata)
+    completion = await invoke_llm_chat(
+        llm_client,
+        system_prompt=prompts["system"],
+        user_prompt=prompts["user"],
+        config=config,
     )
+    if not completion:
+        raise RuntimeError("LLM returned no planning response.")
 
-    return (
-        "import React from 'react';\n"
-        + "\n".join(imports)
-        + "\n\n"
-        + f"export default function {name}Page() {{\n"
-        + "\n".join(body_lines)
-        + "\n}"
+    cleaned = clean_llm_completion(completion)
+    try:
+        plan = json.loads(cleaned)
+    except json.JSONDecodeError as exc:  # pragma: no cover - defensive
+        LOGGER.error("Failed to parse site plan JSON: %s", exc)
+        raise RuntimeError("Invalid site plan JSON returned by LLM.") from exc
+
+    return normalize_site_plan(plan, metadata, config)
+
+
+def ensure_project_structure(plan: Dict[str, Any]) -> None:
+    base_path = Path(plan["base_path"])
+    base_path.mkdir(parents=True, exist_ok=True)
+    LOGGER.info("Ensured project directory %s", base_path)
+
+
+def build_html_prompt(
+    page_spec: Dict[str, Any],
+    plan: Dict[str, Any],
+    metadata: Dict[str, str],
+    requirements_text: str,
+) -> Dict[str, str]:
+    system_prompt = "You craft semantic, accessible HTML5. Return a complete document."
+    plan_snapshot = json.dumps(
+        {
+            "project_name": plan["project_name"],
+            "pages": plan["pages"],
+            "assets": plan["assets"],
+            "testing_focus": plan.get("testing_focus", []),
+        },
+        indent=2,
     )
+    user_prompt = (
+        "Build the '{display}' page for {brand}.\n"
+        "Page specification:\n{page_spec}\n\n"
+        "Project plan snapshot:\n{plan_snapshot}\n\n"
+        "Full requirements excerpt:\n{requirements}\n\n"
+        "Constraints:\n"
+        "- Link to global './styles.css' and './script.js'.\n"
+        "- Include data-testid attributes for navigation, primary CTAs, and interactive elements.\n"
+        "- Favor concise, engaging copy and clear section structure.\n"
+        "- Ensure the main element uses data-testid='main-content'."
+    ).format(
+        display=page_spec.get("display_name"),
+        brand=metadata.get("brand_name", "the brand"),
+        page_spec=json.dumps(page_spec, indent=2),
+        plan_snapshot=plan_snapshot,
+        requirements=trim_text(requirements_text),
+    )
+    return {"system": system_prompt, "user": user_prompt}
 
 
-async def generate_code_artifacts(
-    plan: Dict[str, object],
-    structured_requirements: Dict[str, object],
+def build_styles_prompt(plan: Dict[str, Any], metadata: Dict[str, str], requirements_text: str) -> Dict[str, str]:
+    system_prompt = "You author modern, responsive CSS. Return only CSS."
+    user_prompt = (
+        "Create a single stylesheet '{filename}' for {brand}.\n"
+        "Project overview:\n{plan_snapshot}\n\n"
+        "Requirements excerpt:\n{requirements}\n\n"
+        "Include:\n"
+        "- Custom properties for colors, spacing, and typography.\n"
+        "- Hero, section, navigation, testimonial, and FAQ patterns.\n"
+        "- Responsive breakpoints around 768px and 1200px.\n"
+        "- Focus outlines and high-contrast accessible design.\n"
+        "- Class hooks that match data-testid usage for CTAs and interactive blocks."
+    ).format(
+        filename=plan["assets"]["css"][0]["filename"],
+        brand=metadata.get("brand_name", "the brand"),
+        plan_snapshot=json.dumps({"pages": plan["pages"], "testing_focus": plan.get("testing_focus", [])}, indent=2),
+        requirements=trim_text(requirements_text),
+    )
+    return {"system": system_prompt, "user": user_prompt}
+
+
+def build_script_prompt(plan: Dict[str, Any], metadata: Dict[str, str], requirements_text: str) -> Dict[str, str]:
+    system_prompt = "You write defensive, framework-free JavaScript. Return only JS."
+    interactive_targets: List[str] = []
+    for page in plan["pages"]:
+        interactive_targets.extend(page.get("interactive_targets", []))
+    if not interactive_targets:
+        interactive_targets = ["sticky navigation", "accordion", "form validation"]
+    user_prompt = (
+        "Create a script '{filename}' for {brand}.\n"
+        "Interactive needs: {interactive}.\n"
+        "Project testing focus: {testing}.\n"
+        "Requirements excerpt:\n{requirements}\n\n"
+        "Expectations:\n"
+        "- Use data-testid selectors when attaching behavior.\n"
+        "- Guard against missing DOM nodes.\n"
+        "- Provide keyboard-friendly interactions and focus management.\n"
+        "- Avoid external dependencies."
+    ).format(
+        filename=plan["assets"]["js"][0]["filename"],
+        brand=metadata.get("brand_name", "the brand"),
+        interactive=", ".join(sorted(set(interactive_targets))),
+        testing=", ".join(plan.get("testing_focus", [])),
+        requirements=trim_text(requirements_text),
+    )
+    return {"system": system_prompt, "user": user_prompt}
+
+
+async def generate_html_page(
+    page_spec: Dict[str, Any],
+    plan: Dict[str, Any],
+    metadata: Dict[str, str],
+    requirements_text: str,
+    config: Dict[str, object],
+    llm_client: Optional[Any],
+) -> str:
+    prompts = build_html_prompt(page_spec, plan, metadata, requirements_text)
+    completion = await invoke_llm_chat(
+        llm_client,
+        system_prompt=prompts["system"],
+        user_prompt=prompts["user"],
+        config=config,
+    )
+    if not completion:
+        raise RuntimeError(f"LLM returned no HTML for page '{page_spec.get('filename')}'.")
+    return clean_llm_completion(completion)
+
+
+async def generate_stylesheet(
+    plan: Dict[str, Any],
+    metadata: Dict[str, str],
+    requirements_text: str,
+    config: Dict[str, object],
+    llm_client: Optional[Any],
+) -> str:
+    prompts = build_styles_prompt(plan, metadata, requirements_text)
+    completion = await invoke_llm_chat(
+        llm_client,
+        system_prompt=prompts["system"],
+        user_prompt=prompts["user"],
+        config=config,
+    )
+    if not completion:
+        raise RuntimeError("LLM returned no CSS output.")
+    return clean_llm_completion(completion)
+
+
+async def generate_script(
+    plan: Dict[str, Any],
+    metadata: Dict[str, str],
+    requirements_text: str,
+    config: Dict[str, object],
+    llm_client: Optional[Any],
+) -> str:
+    prompts = build_script_prompt(plan, metadata, requirements_text)
+    completion = await invoke_llm_chat(
+        llm_client,
+        system_prompt=prompts["system"],
+        user_prompt=prompts["user"],
+        config=config,
+    )
+    if not completion:
+        raise RuntimeError("LLM returned no JavaScript output.")
+    return clean_llm_completion(completion)
+
+
+async def generate_site_artifacts(
+    plan: Dict[str, Any],
+    metadata: Dict[str, str],
+    requirements_text: str,
     config: Dict[str, object],
     llm_client: Optional[Any],
 ) -> Dict[str, str]:
     artifacts: Dict[str, str] = {}
+    base_path = Path(plan["base_path"])
 
-    for entry in plan.get("files", []):
-        path = entry.get("path", "")
-        file_type = entry.get("type")
-        source = entry.get("notes", {})
+    for page in plan["pages"]:
+        html = await generate_html_page(page, plan, metadata, requirements_text, config, llm_client)
+        artifacts[str(base_path / page["filename"])] = html
 
-        if file_type == "component":
-            artifacts[path] = await generate_component_source(source, structured_requirements, config, llm_client)
-        elif file_type == "style":
-            component_spec = source.get("component", {})
-            styling_meta = source.get("styling", {})
-            artifacts[path] = await generate_style_source(component_spec, styling_meta, config, llm_client)
-        elif file_type == "page":
-            artifacts[path] = await generate_page_source(source, structured_requirements, config, llm_client)
-        elif file_type == "global_style":
-            artifacts[path] = "body {\n  margin: 0;\n  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;\n  background-color: #f8fafc;\n  color: #0f172a;\n}\n"
-        elif file_type == "html":
-            artifacts[path] = await generate_static_html_source(structured_requirements, config, llm_client)
-        elif file_type == "css":
-            artifacts[path] = await generate_static_css_source(structured_requirements, config, llm_client)
-        elif file_type == "js":
-            artifacts[path] = await generate_static_js_source(structured_requirements, config, llm_client)
+    css_filename = plan["assets"]["css"][0]["filename"]
+    css_content = await generate_stylesheet(plan, metadata, requirements_text, config, llm_client)
+    artifacts[str(base_path / css_filename)] = css_content
+
+    js_filename = plan["assets"]["js"][0]["filename"]
+    js_content = await generate_script(plan, metadata, requirements_text, config, llm_client)
+    artifacts[str(base_path / js_filename)] = js_content
 
     return artifacts
 
@@ -801,16 +516,15 @@ def write_generated_files(artifacts: Dict[str, str]) -> List[str]:
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
     requirements_path = Path(AGENT_CONFIG["requirements_path"])
-    raw_text = load_requirements_text(requirements_path)
-    structured_payload = analyze_requirements(raw_text)
-    project_plan = plan_project_structure(structured_payload, AGENT_CONFIG)
-    ensure_project_structure(project_plan)
+    requirements_text = load_requirements_text(requirements_path)
+    metadata = extract_metadata(requirements_text)
     llm_client = build_llm_client(AGENT_CONFIG)
-    artifacts = await generate_code_artifacts(project_plan, structured_payload, AGENT_CONFIG, llm_client)
+    site_plan = await generate_site_plan(requirements_text, metadata, AGENT_CONFIG, llm_client)
+    ensure_project_structure(site_plan)
+    artifacts = await generate_site_artifacts(site_plan, metadata, requirements_text, AGENT_CONFIG, llm_client)
     written_paths = write_generated_files(artifacts)
     print(json.dumps({
-        "structured_requirements": structured_payload,
-        "project_plan": project_plan,
+        "project_plan": site_plan,
         "generated_files": written_paths,
     }, indent=2))
 
