@@ -1,0 +1,2 @@
+I want to have a simple website that seems as a healthcare related website in which simple information is shown.
+There should be 2 navigateable pages like contact us with a form and a more information page.
