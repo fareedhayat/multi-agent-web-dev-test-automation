@@ -4,13 +4,13 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
+from agent_framework import ChatMessage, ai_function
+from agent_framework.anthropic import AnthropicClient
+from anthropic import AsyncAnthropicFoundry
 from dotenv import load_dotenv
-try:
-    from anthropic import AsyncAnthropicFoundry
-except ImportError:  # pragma: no cover - optional dependency
-    AsyncAnthropicFoundry = None  # type: ignore[assignment]
+from pydantic import Field
 
 load_dotenv()
 
@@ -29,6 +29,63 @@ AGENT_CONFIG: Dict[str, object] = {
 }
 
 LOGGER = logging.getLogger("frontend_coder_agent")
+
+WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
+
+
+def resolve_workspace_path(relative_path: str) -> Path:
+    """Resolve a workspace-relative path and prevent escaping the project root."""
+    resolved = (WORKSPACE_ROOT / relative_path).resolve()
+    try:
+        resolved.relative_to(WORKSPACE_ROOT)
+    except ValueError as exc:
+        raise ValueError(f"Path escapes workspace root: {relative_path}") from exc
+    return resolved
+
+
+@ai_function(
+    name="read_text_file",
+    description="Read UTF-8 text from a workspace-relative path.",
+)
+async def tool_read_text_file(
+    path: Annotated[str, Field(description="Relative path to the file within the project workspace.")]
+) -> str:
+    file_path = resolve_workspace_path(path)
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    return file_path.read_text(encoding="utf-8")
+
+
+@ai_function(
+    name="write_text_file",
+    description="Write UTF-8 text to a workspace-relative path, creating parent directories as needed.",
+)
+async def tool_write_text_file(
+    path: Annotated[str, Field(description="Destination path for the text file, relative to the workspace.")],
+    content: Annotated[str, Field(description="Text content to write to the file.")],
+) -> str:
+    file_path = resolve_workspace_path(path)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content, encoding="utf-8")
+    return str(file_path)
+
+
+AGENT_TOOLS: List[Any] = [tool_read_text_file, tool_write_text_file]
+
+AGENT_INSTRUCTIONS_TEMPLATE = (
+    "You are CoderAgent, a senior front-end engineer building static deliverables for the brand "
+    "'{brand}'.\n"
+    "- Follow the latest system prompt for each request without deviating from the scope.\n"
+    "- Prioritize semantic HTML, accessible patterns, and production-quality CSS and JavaScript.\n"
+    "- Honor project requirements and testing hooks supplied by the orchestrator.\n"
+    "- Never invent files beyond the requested plan and always keep outputs deterministic."
+)
+
+
+def build_agent_instructions(metadata: Dict[str, str]) -> str:
+    return AGENT_INSTRUCTIONS_TEMPLATE.format(
+        brand=metadata.get("brand_name", "the brand")
+    )
 
 
 def load_requirements_text(requirements_path: Path) -> str:
@@ -69,7 +126,7 @@ def slugify(value: str) -> str:
     return lower.lower() or "site"
 
 
-def build_llm_client(config: Dict[str, object]) -> Optional[Any]:
+def build_llm_client(config: Dict[str, object]) -> AnthropicClient:
     llm_config = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
     endpoint = llm_config.get("endpoint", "")
     deployment = llm_config.get("deployment", "")
@@ -82,12 +139,28 @@ def build_llm_client(config: Dict[str, object]) -> Optional[Any]:
         raise RuntimeError("anthropic package not installed. Install with 'pip install anthropic'.")
 
     LOGGER.info("Initializing AsyncAnthropicFoundry client for deployment '%s'.", deployment)
-    return AsyncAnthropicFoundry(api_key=api_key, base_url=endpoint)
+    base_client = AsyncAnthropicFoundry(api_key=api_key, base_url=endpoint)
+    return AnthropicClient(model_id=deployment, anthropic_client=base_client)
 
 
 def extract_text_from_response(response: Any) -> Optional[str]:
     if response is None:
         return None
+
+    text_attr = getattr(response, "text", None)
+    if isinstance(text_attr, str) and text_attr.strip():
+        return text_attr.strip()
+
+    value_attr = getattr(response, "value", None)
+    if isinstance(value_attr, str) and value_attr.strip():
+        return value_attr.strip()
+
+    messages = getattr(response, "messages", None)
+    if isinstance(messages, list):
+        for message in reversed(messages):
+            text_value = getattr(message, "text", None)
+            if isinstance(text_value, str) and text_value.strip():
+                return text_value.strip()
 
     content = getattr(response, "content", None)
     if isinstance(content, list):
@@ -96,13 +169,17 @@ def extract_text_from_response(response: Any) -> Optional[str]:
             if isinstance(item, dict):
                 value = item.get("text") or item.get("value")
                 if value:
-                    fragments.append(value)
+                    fragments.append(str(value))
             else:
                 text_value = getattr(item, "text", None)
                 if text_value:
-                    fragments.append(text_value)
+                    fragments.append(str(text_value))
         if fragments:
             return "".join(fragments).strip()
+
+    raw = getattr(response, "raw_representation", None)
+    if raw is not None and raw is not response:
+        return extract_text_from_response(raw)
 
     output_text = getattr(response, "output_text", None)
     if isinstance(output_text, str):
@@ -126,34 +203,24 @@ def clean_llm_completion(text: str) -> str:
 
 
 async def invoke_llm_chat(
-    client: Optional[Any],
+    agent: Optional[Any],
     *,
     system_prompt: str,
     user_prompt: str,
     config: Dict[str, object],
 ) -> Optional[str]:
-    if client is None:
+    if agent is None:
         return None
 
     llm_config = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
-    deployment = llm_config.get("deployment", "")
     temperature = float(llm_config.get("temperature", 0.15))
     max_tokens = int(llm_config.get("max_output_tokens", llm_config.get("max_tokens", 1500)))
 
     try:
-        response = await client.messages.create(
-            model=deployment,
-            system=system_prompt,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": user_prompt,
-                        }
-                    ],
-                }
+        response = await agent.run(
+            [
+                ChatMessage(role="system", text=system_prompt),
+                ChatMessage(role="user", text=user_prompt),
             ],
             temperature=temperature,
             max_tokens=max_tokens,
@@ -302,16 +369,16 @@ async def generate_site_plan(
     requirements_text: str,
     metadata: Dict[str, str],
     config: Dict[str, object],
-    llm_client: Optional[Any],
+    agent: Optional[Any],
 ) -> Dict[str, Any]:
     if not config.get("use_llm", True):
         raise RuntimeError("LLM usage disabled while generating the site plan.")
-    if llm_client is None:
+    if agent is None:
         raise RuntimeError("LLM client not initialized. Cannot generate the site plan.")
 
     prompts = build_site_plan_prompt(requirements_text, metadata)
     completion = await invoke_llm_chat(
-        llm_client,
+        agent,
         system_prompt=prompts["system"],
         user_prompt=prompts["user"],
         config=config,
@@ -425,11 +492,11 @@ async def generate_html_page(
     metadata: Dict[str, str],
     requirements_text: str,
     config: Dict[str, object],
-    llm_client: Optional[Any],
+    agent: Optional[Any],
 ) -> str:
     prompts = build_html_prompt(page_spec, plan, metadata, requirements_text)
     completion = await invoke_llm_chat(
-        llm_client,
+        agent,
         system_prompt=prompts["system"],
         user_prompt=prompts["user"],
         config=config,
@@ -444,11 +511,11 @@ async def generate_stylesheet(
     metadata: Dict[str, str],
     requirements_text: str,
     config: Dict[str, object],
-    llm_client: Optional[Any],
+    agent: Optional[Any],
 ) -> str:
     prompts = build_styles_prompt(plan, metadata, requirements_text)
     completion = await invoke_llm_chat(
-        llm_client,
+        agent,
         system_prompt=prompts["system"],
         user_prompt=prompts["user"],
         config=config,
@@ -463,11 +530,11 @@ async def generate_script(
     metadata: Dict[str, str],
     requirements_text: str,
     config: Dict[str, object],
-    llm_client: Optional[Any],
+    agent: Optional[Any],
 ) -> str:
     prompts = build_script_prompt(plan, metadata, requirements_text)
     completion = await invoke_llm_chat(
-        llm_client,
+        agent,
         system_prompt=prompts["system"],
         user_prompt=prompts["user"],
         config=config,
@@ -482,21 +549,21 @@ async def generate_site_artifacts(
     metadata: Dict[str, str],
     requirements_text: str,
     config: Dict[str, object],
-    llm_client: Optional[Any],
+    agent: Optional[Any],
 ) -> Dict[str, str]:
     artifacts: Dict[str, str] = {}
     base_path = Path(plan["base_path"])
 
     for page in plan["pages"]:
-        html = await generate_html_page(page, plan, metadata, requirements_text, config, llm_client)
+        html = await generate_html_page(page, plan, metadata, requirements_text, config, agent)
         artifacts[str(base_path / page["filename"])] = html
 
     css_filename = plan["assets"]["css"][0]["filename"]
-    css_content = await generate_stylesheet(plan, metadata, requirements_text, config, llm_client)
+    css_content = await generate_stylesheet(plan, metadata, requirements_text, config, agent)
     artifacts[str(base_path / css_filename)] = css_content
 
     js_filename = plan["assets"]["js"][0]["filename"]
-    js_content = await generate_script(plan, metadata, requirements_text, config, llm_client)
+    js_content = await generate_script(plan, metadata, requirements_text, config, agent)
     artifacts[str(base_path / js_filename)] = js_content
 
     return artifacts
@@ -519,9 +586,16 @@ async def main() -> None:
     requirements_text = load_requirements_text(requirements_path)
     metadata = extract_metadata(requirements_text)
     llm_client = build_llm_client(AGENT_CONFIG)
-    site_plan = await generate_site_plan(requirements_text, metadata, AGENT_CONFIG, llm_client)
-    ensure_project_structure(site_plan)
-    artifacts = await generate_site_artifacts(site_plan, metadata, requirements_text, AGENT_CONFIG, llm_client)
+    agent_instructions = build_agent_instructions(metadata)
+    async with llm_client.create_agent(
+        name="CoderAgent",
+        instructions=agent_instructions,
+        tools=AGENT_TOOLS,
+        allow_multiple_tool_calls=True,
+    ) as agent:
+        site_plan = await generate_site_plan(requirements_text, metadata, AGENT_CONFIG, agent)
+        ensure_project_structure(site_plan)
+        artifacts = await generate_site_artifacts(site_plan, metadata, requirements_text, AGENT_CONFIG, agent)
     written_paths = write_generated_files(artifacts)
     print(json.dumps({
         "project_plan": site_plan,
