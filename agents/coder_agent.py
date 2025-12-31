@@ -31,6 +31,7 @@ AGENT_CONFIG: Dict[str, object] = {
 LOGGER = logging.getLogger("frontend_coder_agent")
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
+_GLOBAL_CLASS_LIST: List[str] = []
 
 
 def resolve_workspace_path(relative_path: str) -> Path:
@@ -147,20 +148,13 @@ def extract_text_from_response(response: Any) -> Optional[str]:
     if response is None:
         return None
 
-    text_attr = getattr(response, "text", None)
-    if isinstance(text_attr, str) and text_attr.strip():
-        return text_attr.strip()
-
     value_attr = getattr(response, "value", None)
     if isinstance(value_attr, str) and value_attr.strip():
         return value_attr.strip()
 
-    messages = getattr(response, "messages", None)
-    if isinstance(messages, list):
-        for message in reversed(messages):
-            text_value = getattr(message, "text", None)
-            if isinstance(text_value, str) and text_value.strip():
-                return text_value.strip()
+    text_attr = getattr(response, "text", None)
+    if isinstance(text_attr, str) and text_attr.strip():
+        return text_attr.strip()
 
     content = getattr(response, "content", None)
     if isinstance(content, list):
@@ -176,6 +170,27 @@ def extract_text_from_response(response: Any) -> Optional[str]:
                     fragments.append(str(text_value))
         if fragments:
             return "".join(fragments).strip()
+
+    messages = getattr(response, "messages", None)
+    if isinstance(messages, list):
+        fragments: List[str] = []
+        for message in messages:
+            message_text = getattr(message, "text", None)
+            if isinstance(message_text, str) and message_text.strip():
+                fragments.append(message_text.strip())
+            message_content = getattr(message, "content", None)
+            if isinstance(message_content, list):
+                for item in message_content:
+                    if isinstance(item, dict):
+                        value = item.get("text") or item.get("value")
+                        if isinstance(value, str) and value.strip():
+                            fragments.append(value.strip())
+                    else:
+                        item_text = getattr(item, "text", None)
+                        if isinstance(item_text, str) and item_text.strip():
+                            fragments.append(item_text.strip())
+        if fragments:
+            return "\n".join(fragments).strip()
 
     raw = getattr(response, "raw_representation", None)
     if raw is not None and raw is not response:
@@ -214,7 +229,7 @@ async def invoke_llm_chat(
 
     llm_config = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
     temperature = float(llm_config.get("temperature", 0.15))
-    max_tokens = int(llm_config.get("max_output_tokens", llm_config.get("max_tokens", 1500)))
+    max_tokens = int(llm_config.get("max_output_tokens", llm_config.get("max_tokens", 5000)))
 
     try:
         response = await agent.run(
@@ -365,6 +380,19 @@ def normalize_site_plan(plan: Dict[str, Any], metadata: Dict[str, str], config: 
     return plan
 
 
+def extract_classes_from_html(html: str) -> List[str]:
+    classes: set[str] = set()
+    for match in re.finditer(r'class\s*=\s*"([^"]+)"', html):
+        for cls in match.group(1).split():
+            cls = cls.strip()
+            if cls:
+                classes.add(cls)
+    # Common hooks from data-testid
+    for match in re.finditer(r'data-testid\s*=\s*"([^"]+)"', html):
+        classes.add(match.group(1).strip())
+    return sorted(classes)
+
+
 async def generate_site_plan(
     requirements_text: str,
     metadata: Dict[str, str],
@@ -444,17 +472,20 @@ def build_styles_prompt(plan: Dict[str, Any], metadata: Dict[str, str], requirem
         "Create a single stylesheet '{filename}' for {brand}.\n"
         "Project overview:\n{plan_snapshot}\n\n"
         "Requirements excerpt:\n{requirements}\n\n"
-        "Include:\n"
-        "- Custom properties for colors, spacing, and typography.\n"
-        "- Hero, section, navigation, testimonial, and FAQ patterns.\n"
-        "- Responsive breakpoints around 768px and 1200px.\n"
-        "- Focus outlines and high-contrast accessible design.\n"
-        "- Class hooks that match data-testid usage for CTAs and interactive blocks."
+        "Style the following classes and patterns comprehensively (include base, components, and responsive rules):\n{class_list}\n\n"
+        "Output structure (do not stop until all sections are present):\n"
+        "1) CSS Reset + Base Typography\n"
+        "2) Layout Utilities (container, grid, spacing)\n"
+        "3) Components: navbar, hero, buttons, cards, toast, skip-link, theme-toggle\n"
+        "4) Accessibility: focus styles, reduced motion handling hooks\n"
+        "5) Dark theme overrides using [data-theme='dark']\n"
+        "6) Media queries: 768px and 1200px breakpoints\n"
     ).format(
         filename=plan["assets"]["css"][0]["filename"],
         brand=metadata.get("brand_name", "the brand"),
         plan_snapshot=json.dumps({"pages": plan["pages"], "testing_focus": plan.get("testing_focus", [])}, indent=2),
         requirements=trim_text(requirements_text),
+        class_list=json.dumps(sorted(_GLOBAL_CLASS_LIST or []), indent=2),
     )
     return {"system": system_prompt, "user": user_prompt}
 
@@ -513,16 +544,47 @@ async def generate_stylesheet(
     config: Dict[str, object],
     agent: Optional[Any],
 ) -> str:
-    prompts = build_styles_prompt(plan, metadata, requirements_text)
-    completion = await invoke_llm_chat(
-        agent,
-        system_prompt=prompts["system"],
-        user_prompt=prompts["user"],
-        config=config,
+    # Multi-pass CSS generation to ensure completeness
+    llm_cfg = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
+    boosted_cfg = {
+        **config,
+        "llm": {**llm_cfg, "max_output_tokens": max(int(llm_cfg.get("max_output_tokens", 1500)) * 2, 3000)},
+    }
+
+    parts: List[str] = []
+
+    # Pass 1: Reset + Base + Layout
+    p1 = (
+        "Write CSS sections: (1) Reset + Base Typography, (2) Layout Utilities (container, grid, spacing). "
+        "Use design tokens and class list:\n{classes}"
+    ).format(classes=json.dumps(sorted(_GLOBAL_CLASS_LIST or []), indent=2))
+    r1 = await invoke_llm_chat(agent, system_prompt="Return only CSS.", user_prompt=p1, config=boosted_cfg)
+    if r1:
+        parts.append(clean_llm_completion(r1))
+
+    # Pass 2: Components
+    p2 = (
+        "Write CSS for components: navbar, hero, buttons (.btn, .btn-primary, .btn-secondary), cards (.intro-card, .service-card), "
+        "toast (.toast, .toast-container), skip-link (.skip-link), theme-toggle (.theme-toggle). Include hover/focus/active states. "
+        "Class list:\n{classes}"
+    ).format(classes=json.dumps(sorted(_GLOBAL_CLASS_LIST or []), indent=2))
+    r2 = await invoke_llm_chat(agent, system_prompt="Return only CSS.", user_prompt=p2, config=boosted_cfg)
+    if r2:
+        parts.append(clean_llm_completion(r2))
+
+    # Pass 3: Accessibility + Dark theme + Media queries
+    p3 = (
+        "Add accessibility styles (focus-visible outlines, reduced motion hooks), dark theme overrides under [data-theme='dark'], "
+        "and responsive media queries for 768px and 1200px breakpoints covering layout and components."
     )
-    if not completion:
+    r3 = await invoke_llm_chat(agent, system_prompt="Return only CSS.", user_prompt=p3, config=boosted_cfg)
+    if r3:
+        parts.append(clean_llm_completion(r3))
+
+    css_combined = "\n\n".join([p for p in parts if p.strip()])
+    if not css_combined.strip():
         raise RuntimeError("LLM returned no CSS output.")
-    return clean_llm_completion(completion)
+    return css_combined
 
 
 async def generate_script(
@@ -553,16 +615,23 @@ async def generate_site_artifacts(
 ) -> Dict[str, str]:
     artifacts: Dict[str, str] = {}
     base_path = Path(plan["base_path"])
+    css_filename = plan["assets"]["css"][0]["filename"]
+    js_filename = plan["assets"]["js"][0]["filename"]
+    collected_classes: set[str] = set()
 
     for page in plan["pages"]:
         html = await generate_html_page(page, plan, metadata, requirements_text, config, agent)
+        # Record classes for styling prompt
+        for cls in extract_classes_from_html(html):
+            collected_classes.add(cls)
         artifacts[str(base_path / page["filename"])] = html
 
-    css_filename = plan["assets"]["css"][0]["filename"]
+    # Update global class list for styles prompt
+    global _GLOBAL_CLASS_LIST
+    _GLOBAL_CLASS_LIST = sorted(collected_classes)
+
     css_content = await generate_stylesheet(plan, metadata, requirements_text, config, agent)
     artifacts[str(base_path / css_filename)] = css_content
-
-    js_filename = plan["assets"]["js"][0]["filename"]
     js_content = await generate_script(plan, metadata, requirements_text, config, agent)
     artifacts[str(base_path / js_filename)] = js_content
 
@@ -591,7 +660,8 @@ async def main() -> None:
         name="CoderAgent",
         instructions=agent_instructions,
         tools=AGENT_TOOLS,
-        allow_multiple_tool_calls=True,
+        # Disable tool side effects during content generation to ensure determinism
+        allow_multiple_tool_calls=False,
     ) as agent:
         site_plan = await generate_site_plan(requirements_text, metadata, AGENT_CONFIG, agent)
         ensure_project_structure(site_plan)
