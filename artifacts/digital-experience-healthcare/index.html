@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Digital Experience Healthcare - Your trusted partner for comprehensive healthcare services. Explore our services and get in touch with our caring team.">
+  <title>Home | Digital Experience Healthcare</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-link" data-testid="skip-to-content">Skip to content</a>
+
+  <!-- Sticky Navigation Bar -->
+  <header>
+    <nav class="navbar" data-testid="navbar" aria-label="Main navigation">
+      <div class="navbar-container">
+        <div class="navbar-brand">
+          <a href="./index.html" aria-label="Digital Experience Healthcare Home">
+            <span class="brand-icon" aria-hidden="true">🏥</span>
+            <span class="brand-name">Digital Experience</span>
+          </a>
+        </div>
+        <ul class="navbar-menu">
+          <li><a href="./index.html" class="nav-link active" aria-current="page">Home</a></li>
+          <li><a href="./more-info.html" class="nav-link">More Information</a></li>
+          <li><a href="./contact.html" class="nav-link">Contact Us</a></li>
+        </ul>
+        <button 
+          type="button" 
+          class="theme-toggle" 
+          data-testid="theme-toggle"
+          aria-label="Toggle dark mode"
+          aria-pressed="false">
+          <span class="theme-icon" aria-hidden="true">🌙</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" data-testid="main-content">
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-content">
+        <h1 id="hero-heading" class="hero-title">
+          Welcome to Digital Experience Healthcare
+        </h1>
+        <p class="hero-subtitle">
+          Compassionate care, cutting-edge technology, and a commitment to your well-being.
+        </p>
+        <p class="hero-description">
+          We're here to support you and your family with comprehensive healthcare services tailored to your needs. From primary care to specialized treatments, our dedicated team is ready to help you live your healthiest life.
+        </p>
+      </div>
+    </section>
+
+    <!-- Brief Introduction Section -->
+    <section class="introduction" aria-labelledby="intro-heading">
+      <div class="container">
+        <h2 id="intro-heading" class="section-title">Your Health, Our Priority</h2>
+        <div class="intro-grid">
+          <article class="intro-card">
+            <div class="intro-icon" aria-hidden="true">👨‍⚕️</div>
+            <h3 class="intro-card-title">Expert Care Team</h3>
+            <p class="intro-card-text">
+              Our board-certified physicians and specialists bring decades of combined experience to deliver personalized, evidence-based care.
+            </p>
+          </article>
+          <article class="intro-card">
+            <div class="intro-icon" aria-hidden="true">🏥</div>
+            <h3 class="intro-card-title">Comprehensive Services</h3>
+            <p class="intro-card-text">
+              From preventive care to advanced treatments, we offer a full spectrum of healthcare services under one roof for your convenience.
+            </p>
+          </article>
+          <article class="intro-card">
+            <div class="intro-icon" aria-hidden="true">💙</div>
+            <h3 class="intro-card-title">Patient-Centered Approach</h3>
+            <p class="intro-card-text">
+              We listen, we care, and we partner with you to create treatment plans that respect your values and lifestyle.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call-to-Action Section -->
+    <section class="cta-section" aria-labelledby="cta-heading">
+      <div class="container">
+        <h2 id="cta-heading" class="section-title">Ready to Get Started?</h2>
+        <p class="cta-description">
+          Explore our services or reach out to schedule an appointment. We're here to answer your questions and guide you every step of the way.
+        </p>
+        <div class="cta-buttons">
+          <a 
+            href="./more-info.html" 
+            class="btn btn-primary" 
+            data-testid="cta-services">
+            Explore Our Services
+          </a>
+          <a 
+            href="./contact.html" 
+            class="btn btn-secondary" 
+            data-testid="cta-contact">
+            Contact Us Today
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-text">
+        &copy; 2024 Digital Experience Healthcare. All rights reserved.
+      </p>
+      <p class="footer-disclaimer">
+        <small>This is a demonstration website. All content is placeholder and for illustrative purposes only.</small>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button 
+    type="button"

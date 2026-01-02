@@ -1,0 +1,59 @@
+{
+  "file_path": "digital-experience-healthcare/styles.css",
+  "language": "CSS",
+  "overview": "The CSS defines foundational design tokens, resets, typography, layout utilities, and accessibility helpers for a healthcare digital experience frontend. It establishes consistent spacing, color, and responsive grid behavior across sections like hero, services, and contact areas.",
+  "key_components": [
+    "Design tokens (:root variables)",
+    "Typography base (headings, paragraphs, links)",
+    "Layout utilities (.container, grid classes)",
+    "Accessibility helpers (.visually-hidden, .skip-link)",
+    "Navbar structure (.navbar, .navbar-container, .navbar-brand)"
+  ],
+  "interactions": [
+    "Hover and focus states for links and buttons",
+    "Responsive grid adjustments via media queries",
+    "Skip link focus visibility for keyboard navigation",
+    "Dark theme toggle via [data-theme='dark']"
+  ],
+  "routes": [
+    "/",
+    "/services",
+    "/contact",
+    "/search"
+  ],
+  "selectors": [
+    ".container",
+    ".intro-grid",
+    ".service-cards-grid",
+    ".contact-grid",
+    ".skip-link",
+    ".navbar",
+    ".navbar-brand",
+    ".brand-icon",
+    ".brand-name"
+  ],
+  "data_flow": [
+    "CSS variables cascade from :root and [data-theme='dark']",
+    "Layout and spacing tokens applied to section containers",
+    "Responsive breakpoints modify grid templates dynamically"
+  ],
+  "accessibility": [
+    "Keyboard focus outlines using --color-focus",
+    "Skip link visibility on focus for screen readers",
+    ".visually-hidden class for hidden but accessible content",
+    "High contrast color tokens for dark/light themes"
+  ],
+  "analytics": [
+    "Potential hooks on navbar-brand click for navigation tracking",
+    "Skip-link usage metrics for accessibility engagement",
+    "Theme toggle events for user preference analytics"
+  ],
+  "test_ideas": [
+    "Verify skip-link becomes visible and navigates correctly on keyboard focus",
+    "Validate responsive grid column counts at breakpoints (640px, 768px, 1024px)",
+    "Check dark theme variable overrides apply correctly when [data-theme='dark'] is set",
+    "Ensure focus outlines appear on interactive elements (links, buttons, inputs)",
+    "Confirm container padding adjusts at defined media queries",
+    "Test navbar stickiness and shadow transitions on scroll"
+  ]
+}
