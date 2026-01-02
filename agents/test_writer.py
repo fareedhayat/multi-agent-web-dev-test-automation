@@ -27,17 +27,19 @@ from .test_writer_helpers import (
     summarize_requirements_with_llm,
     collect_artifact_files,
     summarize_code_files,
-    generate_test_plan_with_llm,
+    generate_test_plan_with_anthropic,
 )
 
 load_dotenv()
 
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
+AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
 AZURE_OPENAI_REQUIREMENTS_SUMMARY_DEPLOYMENT = os.getenv("AZURE_OPENAI_REQUIREMENTS_SUMMARY_DEPLOYMENT")
 AZURE_OPENAI_CODE_SUMMARY_DEPLOYMENT = os.getenv("AZURE_OPENAI_CODE_SUMMARY_DEPLOYMENT")
-AZURE_OPENAI_TEST_WRITER_DEPLOYMENT = os.getenv("AZURE_OPENAI_TEST_WRITER_DEPLOYMENT")
+ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
+ANTHROPIC_FOUNDRY_DEPLOYMENT = os.getenv("ANTHROPIC_FOUNDRY_DEPLOYMENT")
+ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ARTIFACTS_ROOT = PROJECT_ROOT / "artifacts"
@@ -164,13 +166,12 @@ async def test_generator() -> Dict[str, Any]:
     if not isinstance(manifest_data, dict) or not manifest_data:
         raise ValueError("Code summary manifest is empty or malformed.")
 
-    test_plan_markdown = await generate_test_plan_with_llm(
+    test_plan_markdown = await generate_test_plan_with_anthropic(
         requirements_summary=requirements_summary,
         code_manifest=manifest_data,
-        endpoint=AZURE_OPENAI_ENDPOINT,
-        api_key=AZURE_OPENAI_KEY,
-        deployment_name=AZURE_OPENAI_TEST_WRITER_DEPLOYMENT,
-        api_version=AZURE_OPENAI_API_VERSION,
+        endpoint=ANTHROPIC_FOUNDRY_ENDPOINT,
+        api_key=ANTHROPIC_FOUNDRY_API_KEY,
+        deployment_name=ANTHROPIC_FOUNDRY_DEPLOYMENT,
     )
 
     test_plan_path = ARTIFACTS_ROOT / TEST_PLAN_FILENAME

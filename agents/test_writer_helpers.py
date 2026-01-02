@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from agent_framework import ChatMessage
+from agent_framework.anthropic import AnthropicClient
 from agent_framework.azure import AzureOpenAIAssistantsClient
+from anthropic import AsyncAnthropicFoundry
 
 SUMMARY_FILENAME = "requirements-summary.txt"
 TEST_PLAN_FILENAME = "playwright-test-plan.md"
@@ -272,6 +274,22 @@ def build_assistants_client_kwargs(
     }
 
 
+def build_anthropic_client(
+    endpoint: Optional[str],
+    api_key: Optional[str],
+    deployment_name: Optional[str],
+) -> AnthropicClient:
+    if not endpoint:
+        raise ValueError("ANTHROPIC_FOUNDRY_ENDPOINT is not configured.")
+    if not deployment_name:
+        raise ValueError("Anthropic deployment name is not configured.")
+    if not api_key:
+        raise ValueError("ANTHROPIC_FOUNDRY_API_KEY must be configured.")
+
+    anthropic_client = AsyncAnthropicFoundry(api_key=api_key, base_url=endpoint)
+    return AnthropicClient(model_id=deployment_name, anthropic_client=anthropic_client)
+
+
 async def summarize_requirements_with_llm(
     markdown_text: str,
     *,
@@ -488,33 +506,42 @@ def build_test_plan_prompt(
     return "\n".join(lines).strip()
 
 
-async def generate_test_plan_with_llm(
+async def generate_test_plan_with_anthropic(
     *,
     requirements_summary: str,
     code_manifest: Dict[str, Dict[str, Any]],
     endpoint: Optional[str],
     api_key: Optional[str],
     deployment_name: Optional[str],
-    api_version: str,
 ) -> str:
     if not code_manifest:
         raise ValueError("Code manifest is empty; cannot generate tests without artifact context.")
 
     prompt = build_test_plan_prompt(requirements_summary, code_manifest)
-    client_kwargs = build_assistants_client_kwargs(endpoint, api_key, deployment_name, api_version)
+    client = build_anthropic_client(endpoint, api_key, deployment_name)
 
-    async with AzureOpenAIAssistantsClient(**client_kwargs) as client:
-        response = await client.get_response(
-            [
-                ChatMessage(role="system", text=TEST_GENERATION_SYSTEM_PROMPT),
-                ChatMessage(role="user", text=prompt),
-            ],
-            temperature=0.2,
-            max_tokens=1400,
-        )
+    messages = [
+        ChatMessage(role="system", text=TEST_GENERATION_SYSTEM_PROMPT),
+        ChatMessage(role="user", text=prompt),
+    ]
 
+    response = await client.get_response(messages, temperature=0.2, max_tokens=1400)
     raw_text = extract_text_from_response(response)
+
     if not raw_text:
-        raise ValueError("Test generation model returned an empty response.")
+        retry_messages = messages + [
+            ChatMessage(
+                role="user",
+                text=(
+                    "Your previous reply was empty. Provide the Playwright Test Plan markdown now, "
+                    "following the required structure."
+                ),
+            )
+        ]
+        response = await client.get_response(retry_messages, temperature=0.2, max_tokens=1400)
+        raw_text = extract_text_from_response(response)
+
+    if not raw_text:
+        raise ValueError("Test generation model returned an empty response after retry.")
 
     return sanitize_ascii(raw_text)
