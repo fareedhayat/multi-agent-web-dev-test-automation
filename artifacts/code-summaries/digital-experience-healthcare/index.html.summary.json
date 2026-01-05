@@ -1,0 +1,63 @@
+{
+  "file_path": "digital-experience-healthcare/index.html",
+  "language": "HTML",
+  "overview": "Landing page for Digital Experience Healthcare featuring navigation, hero content, introduction cards, and a call-to-action section. Focuses on accessibility, responsive layout, and user engagement through navigation and theme toggling.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with brand and menu links",
+    "Theme toggle button",
+    "Hero section with heading, subtitle, and image",
+    "Introduction section with feature cards",
+    "Call-to-action section with buttons"
+  ],
+  "interactions": [
+    "Clicking navigation links routes to internal pages",
+    "Theme toggle button switches between light and dark modes",
+    "Skip to content link jumps focus to main content",
+    "CTA buttons likely navigate to service or contact pages"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-information.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    ".navbar-link.active",
+    ".hero-title",
+    ".intro-card",
+    ".cta-section"
+  ],
+  "data_flow": [
+    "Static HTML content rendered client-side",
+    "Theme toggle updates DOM state via aria-pressed attribute",
+    "Navigation links trigger full page reloads to other static routes",
+    "No dynamic data fetching or API calls observed"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA labels on navigation and buttons",
+    "Semantic headings and landmark roles",
+    "Alt attributes on images (decorative image marked aria-hidden)",
+    "Color contrast and focus states should be verified"
+  ],
+  "analytics": [
+    "Potential page view tracking on route changes",
+    "Theme toggle interaction tracking",
+    "CTA button click tracking for conversion metrics",
+    "Navigation link click events for engagement analytics"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link moves focus correctly",
+    "Validate navbar links navigate to correct routes",
+    "Check theme toggle updates aria-pressed and visual theme",
+    "Ensure hero and intro sections render expected text and structure",
+    "Confirm CTA buttons are visible and functional",
+    "Run accessibility audit for ARIA compliance and keyboard navigation",
+    "Validate responsive layout across viewport sizes",
+    "Track analytics events firing on key interactions"
+  ]
+}

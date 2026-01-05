@@ -1,0 +1,61 @@
+{
+  "file_path": "digital-experience-healthcare/styles.css",
+  "language": "CSS",
+  "overview": "The stylesheet defines a healthcare digital experience design system with CSS resets, design tokens, typography, layout utilities, accessibility helpers, and theme support. It establishes consistent spacing, color, and typography scales for responsive and accessible UI components.",
+  "key_components": [
+    "Global CSS Reset",
+    "Design Tokens (:root variables)",
+    "Typography (headings, paragraphs)",
+    "Layout Utilities (.container, grid)",
+    "Accessibility Utilities (.visually-hidden, .skip-link)",
+    "Theme Support ([data-theme='dark'])",
+    "Navbar and Hero Containers"
+  ],
+  "interactions": [
+    "Focus state for skip links reveals accessibility navigation",
+    "Responsive typography scaling via media queries",
+    "Dark/light theme switching through data-theme attribute"
+  ],
+  "routes": [
+    "/",
+    "/home",
+    "/content",
+    "/accessibility"
+  ],
+  "selectors": [
+    ":root",
+    "html",
+    "body",
+    "h1, h2, h3, h4, h5, h6",
+    "p",
+    ".container",
+    ".visually-hidden",
+    ".skip-link",
+    ".skip-to-content",
+    "[data-theme='dark']"
+  ],
+  "data_flow": [
+    "CSS variables cascade from :root to components",
+    "Theme overrides applied via [data-theme='dark']",
+    "Responsive adjustments through media queries"
+  ],
+  "accessibility": [
+    "Skip link visible on focus for keyboard users",
+    ".visually-hidden class hides content visually but keeps it accessible to screen readers",
+    "High contrast focus outlines using --color-focus and --color-focus-ring"
+  ],
+  "analytics": [
+    "Potential analytics hook on theme toggle",
+    "Track skip-link usage for accessibility engagement",
+    "Monitor responsive breakpoint usage for device analytics"
+  ],
+  "test_ideas": [
+    "Verify skip-link visibility and focus behavior with keyboard navigation",
+    "Validate dark theme variable overrides for color contrast compliance",
+    "Check responsive typography scaling at defined breakpoints",
+    "Ensure container width and padding adjust correctly across viewport sizes",
+    "Confirm visually-hidden elements remain accessible to screen readers",
+    "Test CSS variable inheritance and fallback behavior",
+    "Validate focus outlines meet accessibility contrast ratios"
+  ]
+}

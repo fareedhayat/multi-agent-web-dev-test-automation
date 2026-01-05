@@ -1,0 +1,55 @@
+Interactive Healthcare Website
+
+Pages & Navigation:
+- Home page: hero section with intro and CTA buttons.
+- More Information page: services overview with interactivity.
+- Contact Us page: form with validation and feedback.
+- Sticky navbar highlights active page and includes back-to-top button.
+- Smooth scrolling for in-page anchors; respects reduced motion.
+
+Contact Us Form:
+- Fields: Full Name (required), Email (required, valid), Phone (optional, auto-format), Message (required, 20-1000 chars).
+- Real-time validation with inline messages; disable Submit until valid.
+- On submit: show loading spinner, simulate success/failure (800-1500ms).
+- Success: clear form, focus first field, show dismissible banner, log analytics.
+- Failure: keep inputs, focus first invalid field, show error banner.
+- Accessibility: ARIA attributes, keyboard navigation, clear focus styles.
+
+More Information Page:
+- Search input filters service cards by title/description (debounced ~250ms).
+- Filters: multi-select tag chips (e.g., Primary Care, Pediatrics).
+- Sort: dropdown for Alphabetical or Popularity (mock data).
+- FAQ accordion: expand/collapse one answer at a time; persist state via localStorage.
+- Tabbed content: switch between Services, Insurance, Locations with transitions.
+- Optional map embed: highlight map marker on location card click.
+
+Shared UI/Interactions:
+- Theme toggle: light/dark mode persisted in localStorage.
+- Toast notifications: reusable, auto-dismiss, manual close.
+- Lazy-load images with skeleton loaders until content is ready.
+- Accessibility: WCAG 2.1 AA, skip-to-content link, ARIA roles.
+- Keyboard-first: all interactive elements operable by keyboard.
+
+Accessibility & Performance:
+- Debounce search; minimize reflow; test on mobile devices.
+- Mobile-first responsive layout (320px to desktop).
+- SEO basics: titles, meta description, favicon, heading hierarchy.
+- Test on latest Chrome/Edge/Firefox/Safari browsers.
+- Lighthouse performance and accessibility scores ≥ 90 on desktop.
+
+Analytics:
+- Log events to window.analyticsLog with { type, timestamp, payload }.
+- Track actions: form_submit_success, form_submit_error, search, filter_change, theme_toggle.
+- Hidden debug panel toggled via keyboard (e.g., Ctrl+Shift+D).
+
+Acceptance Tests (Playwright):
+- Navbar: sticky, highlights active page, back-to-top appears after scroll.
+- Theme toggle: persists across refresh; respects reduced motion.
+- Contact form: validation messages, submit disabled when invalid.
+- Contact form success: toast/banner shown, inputs cleared.
+- Contact form failure: inputs preserved, focus on first invalid field.
+- More Info: search filters cards; filters and sort work together.
+- Accordion: opens/closes, persists state.
+- Tabs: switch views with smooth transitions.
+- Skeleton loaders replaced when content is ready.
+- Accessibility: Tab cycles logically; ARIA attributes on accordion and tabs.

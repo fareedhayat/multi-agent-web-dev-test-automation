@@ -1,0 +1,68 @@
+{
+  "file_path": "digital-experience-healthcare/more-information.html",
+  "language": "HTML",
+  "overview": "The 'More Information' page provides a searchable and filterable interface for healthcare services, including navigation, theme toggling, and accessibility features. It displays service cards dynamically after initial skeleton loaders.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with brand and links",
+    "Theme toggle button",
+    "Search input",
+    "Filter chips for service categories",
+    "Sort dropdown",
+    "Service cards grid with skeleton loaders"
+  ],
+  "interactions": [
+    "Click skip link to jump to main content",
+    "Toggle dark/light theme via theme-toggle button",
+    "Enter text in search input to filter services",
+    "Click filter chips to apply category filters",
+    "Change sort dropdown to reorder service cards",
+    "Navigate between pages using navbar links"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-information.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='search-input']",
+    "[data-testid='filter-chip']",
+    "[data-testid='sort-dropdown']",
+    "[data-testid='skeleton-loader']",
+    "#service-cards-container"
+  ],
+  "data_flow": [
+    "User input in search field triggers filtering of service cards",
+    "Filter chip clicks modify displayed categories",
+    "Sort dropdown changes order of service cards",
+    "Initial skeleton loaders replaced by fetched service data",
+    "Theme toggle updates global UI state"
+  ],
+  "accessibility": [
+    "Skip link enables keyboard users to bypass navigation",
+    "ARIA labels for navigation and filter groups",
+    "Visually hidden labels for search input",
+    "aria-current used for active page link",
+    "aria-hidden applied to decorative icons and loaders"
+  ],
+  "analytics": [
+    "Track search input usage and query terms",
+    "Log filter chip selections",
+    "Monitor sort dropdown changes",
+    "Record theme toggle events",
+    "Page view tracking for 'More Information' route"
+  ],
+  "test_ideas": [
+    "Verify skip link focuses main content",
+    "Ensure navbar links navigate correctly",
+    "Validate theme toggle updates UI and persists state",
+    "Test search input filters service cards dynamically",
+    "Confirm filter chips toggle active state and filter results",
+    "Check sort dropdown reorders services correctly",
+    "Assert skeleton loaders replaced with service cards after data load",
+    "Run accessibility audit for ARIA and keyboard navigation"
+  ]
+}

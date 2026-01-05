@@ -1,0 +1,66 @@
+{
+  "file_path": "digital-experience-healthcare/main.js",
+  "language": "JavaScript",
+  "overview": "This JavaScript file initializes interactive behaviors for a healthcare website, including theme toggling, back-to-top visibility, navbar highlighting, skip-to-content accessibility, toast notifications, and contact form validation. It also integrates lightweight analytics logging and respects user motion preferences.",
+  "key_components": [
+    "Theme toggle system",
+    "Back-to-top button",
+    "Navbar active state handler",
+    "Skip-to-content link",
+    "Toast notification system",
+    "Contact form validation (partial)",
+    "Analytics logger"
+  ],
+  "interactions": [
+    "Click theme toggle to switch between light/dark themes",
+    "Scroll to trigger back-to-top visibility",
+    "Click back-to-top to scroll smoothly to top",
+    "Navbar links highlight based on current route",
+    "Click skip-to-content to focus main content",
+    "Show and dismiss toast notifications automatically or on click",
+    "Form submission validation and feedback (implied)"
+  ],
+  "routes": [
+    "Dynamic detection of current pathname via window.location.pathname",
+    "Navbar link highlighting based on href match"
+  ],
+  "selectors": [
+    "[data-testid='theme-toggle']",
+    "[data-testid='back-to-top']",
+    "[data-testid='navbar']",
+    "[data-testid='skip-to-content']",
+    "[data-testid='toast']",
+    "[data-testid='contact-form']",
+    "main, #main-content"
+  ],
+  "data_flow": [
+    "Theme preference stored and retrieved from localStorage",
+    "Analytics events pushed to window.analyticsLog",
+    "Scroll position drives back-to-top visibility",
+    "Toast messages dynamically created and dismissed",
+    "Form data validation triggers UI feedback (implied)"
+  ],
+  "accessibility": [
+    "Aria attributes for toast visibility and live region",
+    "Aria-hidden toggling for back-to-top button",
+    "Aria-current for active navbar link",
+    "Skip-to-content focuses main content with tabindex",
+    "Respects prefers-reduced-motion media query"
+  ],
+  "analytics": [
+    "logAnalytics('theme_toggle', { theme }) on theme change",
+    "window.analyticsLog array stores event objects with timestamps",
+    "Console output for analytics debugging"
+  ],
+  "test_ideas": [
+    "Verify theme toggle updates DOM attribute and localStorage",
+    "Ensure analytics event logged on theme toggle",
+    "Validate back-to-top visibility toggles after scrolling past threshold",
+    "Confirm smooth scroll behavior respects reduced motion setting",
+    "Check navbar highlights correct link for current route",
+    "Test skip-to-content focuses main content and scrolls correctly",
+    "Verify toast creation, visibility, and dismissal timing",
+    "Confirm aria attributes update correctly for accessibility",
+    "Simulate missing elements to ensure defensive null checks work"
+  ]
+}
