@@ -10,13 +10,16 @@ Tools:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from pathlib import Path
 from typing import Any, Dict
 
 from agent_framework import ai_function
+from agent_framework.azure import AzureOpenAIAssistantsClient
 from dotenv import load_dotenv
+
 
 from .test_writer_helpers import (
     SUMMARY_FILENAME,
@@ -33,10 +36,11 @@ from .test_writer_helpers import (
 load_dotenv()
 
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
+AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
 AZURE_OPENAI_REQUIREMENTS_SUMMARY_DEPLOYMENT = os.getenv("AZURE_OPENAI_REQUIREMENTS_SUMMARY_DEPLOYMENT")
 AZURE_OPENAI_CODE_SUMMARY_DEPLOYMENT = os.getenv("AZURE_OPENAI_CODE_SUMMARY_DEPLOYMENT")
+AZURE_OPENAI_AGENT_DEPLOYMENT = os.getenv("AZURE_OPENAI_AGENT_DEPLOYMENT") or os.getenv("AZURE_OPENAI_DEPLOYMENT")
 ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
 ANTHROPIC_FOUNDRY_DEPLOYMENT = os.getenv("ANTHROPIC_FOUNDRY_DEPLOYMENT")
 ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
@@ -184,3 +188,57 @@ async def test_generator() -> Dict[str, Any]:
         "code_manifest_file": manifest_path.relative_to(PROJECT_ROOT).as_posix(),
         "test_plan_preview": test_plan_markdown[:1000],
     }
+
+
+async def main() -> None:
+    """Interactive agent loop for orchestrating the test writer tools."""
+    endpoint = AZURE_OPENAI_ENDPOINT
+    api_key = AZURE_OPENAI_KEY
+    deployment = AZURE_OPENAI_AGENT_DEPLOYMENT
+
+    missing = [name for name, value in {
+        "AZURE_OPENAI_ENDPOINT": endpoint,
+        "AZURE_OPENAI_KEY": api_key,
+        "AZURE_OPENAI_AGENT_DEPLOYMENT": deployment,
+    }.items() if not value]
+
+    if missing:
+        print("Error: Missing required Azure OpenAI configuration in .env file: " + ", ".join(missing))
+        return
+
+    client = AzureOpenAIAssistantsClient(
+        endpoint=endpoint,
+        api_key=api_key,
+        deployment_name=deployment,
+        api_version=AZURE_OPENAI_API_VERSION,
+    )
+
+    instructions = (
+        "You are PlaywrightTestWriterAgent. Use the provided tools to summarize project requirements, "
+        "analyze generated code artifacts, and produce a Playwright test plan. Call tools whenever you "
+        "need the latest summaries or to generate the test plan. Only rely on tool outputs when answering."
+    )
+
+    async with client.create_agent(
+        name="PlaywrightTestWriterAgent",
+        instructions=instructions,
+        tools=[requirements_file_parser, generated_code_parser, test_generator],
+        allow_multiple_tool_calls=True,
+    ) as agent:
+        print("PlaywrightTestWriterAgent is ready. Type 'exit' to end the conversation.")
+        thread = agent.get_new_thread(store=True)
+
+        while True:
+            user_input = input("User: ")
+            if user_input.strip().lower() == "exit":
+                break
+
+            print("Agent: ", end="", flush=True)
+            async for chunk in agent.run_stream(user_input, thread=thread):
+                if chunk.text:
+                    print(chunk.text, end="", flush=True)
+            print()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
