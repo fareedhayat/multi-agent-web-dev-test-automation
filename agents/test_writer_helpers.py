@@ -66,12 +66,18 @@ CODE_SUMMARY_KEYS = [
 
 TEST_GENERATION_SYSTEM_PROMPT = (
     "You are a senior QA automation engineer preparing a natural-language Playwright test plan. "
-    "Use the supplied requirements summary and code summaries to produce Markdown starting with the heading "
-    "'Playwright Test Plan'. Organize the output into suites and numbered scenarios. "
-    "Each scenario must include sections for Goal, Preconditions, Steps, and Assertions using concise bullet lists. "
-    "Reference selectors, user interactions, accessibility expectations, analytics hooks, and edge cases captured in the summaries. "
-    "Do not return executable Playwright code; keep the response focused on high-value coverage recommendations."
+    "Start with the heading 'Playwright Test Plan'. Organize into suites and numbered scenarios. "
+    "Each scenario must include Goal, Preconditions, Steps, and Assertions as short bullet lists. "
+    "Hard limits for brevity: max 4 bullets per section; each bullet <= 100 characters. "
+    "Prioritize critical paths, selectors, and edge cases; omit repetitive detail and prose. "
+    "Do not return executable code; keep the response concise so the full plan fits in one reply."
 )
+
+# Prompt compaction limits to reduce token usage
+PLAN_MAX_REQUIREMENTS_CHARS = 2000
+PLAN_MAX_FILES = 25
+PLAN_MAX_ITEMS_PER_SECTION = 6
+PLAN_OVERVIEW_MAX_CHARS = 200
 
 
 def sanitize_ascii(value: str, *, preserve_newlines: bool = False) -> str:
@@ -476,34 +482,46 @@ async def summarize_code_files(
     return summaries
 
 
+def _truncate(text: str, limit: int) -> str:
+    text = str(text or "").strip()
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 1)] + "…"
+
+
 def build_test_plan_prompt(
     requirements_summary: str,
     code_manifest: Dict[str, Dict[str, Any]],
 ) -> str:
     lines: List[str] = []
+    # Compact requirements
     lines.append("Requirements Summary\n--------------------")
-    lines.append(requirements_summary.strip())
+    lines.append(_truncate(requirements_summary.strip(), PLAN_MAX_REQUIREMENTS_CHARS))
     lines.append("")
     lines.append("Code Artifact Highlights\n-------------------------")
 
-    for relative_path in sorted(code_manifest):
-        entry = code_manifest[relative_path] or {}
+    # Only include up to PLAN_MAX_FILES files to keep prompt small
+    for idx, relative_path in enumerate(sorted(code_manifest)):
+        if idx >= PLAN_MAX_FILES:
+            lines.append("… (additional files omitted) …")
+            break
+        entry = code_manifest.get(relative_path) or {}
         lines.append(f"File: {relative_path}")
         language = entry.get("language")
         if language:
             lines.append(f"Language: {language}")
         overview = entry.get("overview")
         if overview:
-            lines.append(f"Overview: {overview}")
-        for key in CODE_SUMMARY_KEYS:
-            if key == "overview":
-                continue
+            lines.append(f"Overview: {_truncate(overview, PLAN_OVERVIEW_MAX_CHARS)}")
+
+        # Include only the most actionable sections and cap items
+        for key in ("selectors", "interactions", "routes", "test_ideas"):
             values = entry.get(key) or []
             if not values:
                 continue
             label = key.replace("_", " ").title()
             lines.append(f"{label}:")
-            for item in values:
+            for item in values[:PLAN_MAX_ITEMS_PER_SECTION]:
                 lines.append(f"- {item}")
         lines.append("")
 
