@@ -5,18 +5,19 @@
   "key_components": [
     "Skip to content link",
     "Sticky navigation bar",
-    "Hero section with title and subtitle",
+    "Hero section",
     "Success banner",
     "Error banner",
     "Contact information sidebar",
-    "Contact form (implied but not shown in snippet)",
+    "Contact form (implied)",
     "Theme toggle button"
   ],
   "interactions": [
     "Click skip-to-content link to jump to main content",
     "Toggle theme via theme-toggle button",
-    "Submit contact form to trigger success or error banners",
-    "Dismiss success or error banners via close button"
+    "Submit contact form to trigger success or error banner visibility",
+    "Dismiss banners via banner-close buttons",
+    "Navigate between pages using navbar links"
   ],
   "routes": [
     "./index.html",
@@ -35,33 +36,33 @@
     ".contact-section"
   ],
   "data_flow": [
-    "User inputs data into contact form",
+    "User enters data in contact form fields",
     "Form submission triggers client-side validation",
     "On success, success-banner is shown and form cleared",
-    "On error, error-banner is shown with guidance",
-    "Dismiss buttons hide banners"
+    "On failure, error-banner is shown with guidance",
+    "Dismissal of banners hides them from view"
   ],
   "accessibility": [
     "Skip link for keyboard navigation",
-    "ARIA roles on navigation and banners",
+    "ARIA roles and labels on navigation and banners",
     "aria-live regions for dynamic alerts",
-    "aria-labels on interactive elements",
-    "Semantic headings and landmarks"
+    "Semantic headings and landmarks",
+    "Keyboard focusable buttons and links"
   ],
   "analytics": [
-    "Track form submission success and failure events",
+    "Track form submission success/failure events",
     "Track theme toggle usage",
     "Track navigation link clicks",
     "Track banner dismiss actions"
   ],
   "test_ideas": [
-    "Verify skip-to-content link focuses main content",
-    "Validate navbar links navigate correctly",
-    "Test theme toggle updates visual theme and persists state",
-    "Submit form with valid data and assert success-banner visibility",
-    "Submit form with invalid data and assert error-banner visibility",
-    "Ensure banner close buttons hide respective banners",
-    "Check ARIA attributes and live regions announce correctly",
-    "Confirm analytics events fire on form submission and theme toggle"
+    "Verify skip-to-content link moves focus to main content",
+    "Validate navbar links navigate correctly and active state updates",
+    "Test theme toggle changes visual theme and persists state if applicable",
+    "Submit form with valid data and confirm success-banner appears",
+    "Submit form with invalid data and confirm error-banner appears",
+    "Ensure banner-close buttons hide banners and restore focus appropriately",
+    "Check accessibility attributes (aria-live, aria-label) are present and functional",
+    "Confirm analytics events fire on key interactions"
   ]
 }

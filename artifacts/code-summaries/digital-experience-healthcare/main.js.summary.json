@@ -1,7 +1,7 @@
 {
   "file_path": "digital-experience-healthcare/main.js",
   "language": "JavaScript",
-  "overview": "This JavaScript file initializes interactive behaviors for a healthcare website, including theme toggling, back-to-top visibility, navbar highlighting, skip-to-content accessibility, toast notifications, and contact form validation. It also integrates lightweight analytics logging and respects user motion preferences.",
+  "overview": "This script initializes interactive behaviors for a healthcare website, including theme toggling, back-to-top visibility, navbar highlighting, skip-to-content accessibility, toast notifications, and contact form validation. It also logs analytics events and respects user motion preferences.",
   "key_components": [
     "Theme toggle system",
     "Back-to-top button",
@@ -12,8 +12,8 @@
     "Analytics logger"
   ],
   "interactions": [
-    "Click theme toggle to switch between light/dark themes",
-    "Scroll to trigger back-to-top visibility",
+    "Click theme toggle to switch between light and dark themes",
+    "Scroll to reveal or hide back-to-top button",
     "Click back-to-top to scroll smoothly to top",
     "Navbar links highlight based on current route",
     "Click skip-to-content to focus main content",
@@ -21,8 +21,8 @@
     "Form submission validation and feedback (implied)"
   ],
   "routes": [
-    "Dynamic detection of current pathname via window.location.pathname",
-    "Navbar link highlighting based on href match"
+    "Dynamic detection via window.location.pathname for navbar highlighting",
+    "No explicit route navigation; relies on anchor hrefs"
   ],
   "selectors": [
     "[data-testid='theme-toggle']",
@@ -30,37 +30,35 @@
     "[data-testid='navbar']",
     "[data-testid='skip-to-content']",
     "[data-testid='toast']",
-    "[data-testid='contact-form']",
-    "main, #main-content"
+    "[data-testid='contact-form']"
   ],
   "data_flow": [
     "Theme preference stored and retrieved from localStorage",
     "Analytics events pushed to window.analyticsLog",
-    "Scroll position drives back-to-top visibility",
+    "Scroll position triggers UI visibility changes",
     "Toast messages dynamically created and dismissed",
-    "Form data validation triggers UI feedback (implied)"
+    "Form data expected to be validated before submission"
   ],
   "accessibility": [
-    "Aria attributes for toast visibility and live region",
-    "Aria-hidden toggling for back-to-top button",
-    "Aria-current for active navbar link",
-    "Skip-to-content focuses main content with tabindex",
+    "Aria attributes for visibility and live regions on toast",
+    "Aria-current for active navbar links",
+    "Skip-to-content link focuses main content with tabindex",
+    "Back-to-top button toggles aria-hidden",
     "Respects prefers-reduced-motion media query"
   ],
   "analytics": [
     "logAnalytics('theme_toggle', { theme }) on theme change",
-    "window.analyticsLog array stores event objects with timestamps",
+    "window.analyticsLog array stores all events with timestamps",
     "Console output for analytics debugging"
   ],
   "test_ideas": [
     "Verify theme toggle updates DOM attribute and localStorage",
-    "Ensure analytics event logged on theme toggle",
-    "Validate back-to-top visibility toggles after scrolling past threshold",
+    "Ensure back-to-top button visibility toggles after scrolling past threshold",
     "Confirm smooth scroll behavior respects reduced motion setting",
-    "Check navbar highlights correct link for current route",
-    "Test skip-to-content focuses main content and scrolls correctly",
-    "Verify toast creation, visibility, and dismissal timing",
-    "Confirm aria attributes update correctly for accessibility",
-    "Simulate missing elements to ensure defensive null checks work"
+    "Validate navbar highlights correct link based on pathname",
+    "Check skip-to-content focuses main content and scrolls correctly",
+    "Assert toast creation, visibility, and dismissal timing",
+    "Confirm analytics events are logged with correct payloads",
+    "Test accessibility attributes update correctly during interactions"
   ]
 }

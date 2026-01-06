@@ -7,18 +7,19 @@
     "key_components": [
       "Skip to content link",
       "Sticky navigation bar",
-      "Hero section with title and subtitle",
+      "Hero section",
       "Success banner",
       "Error banner",
       "Contact information sidebar",
-      "Contact form (implied but not shown in snippet)",
+      "Contact form (implied)",
       "Theme toggle button"
     ],
     "interactions": [
       "Click skip-to-content link to jump to main content",
       "Toggle theme via theme-toggle button",
-      "Submit contact form to trigger success or error banners",
-      "Dismiss success or error banners via close button"
+      "Submit contact form to trigger success or error banner visibility",
+      "Dismiss banners via banner-close buttons",
+      "Navigate between pages using navbar links"
     ],
     "routes": [
       "./index.html",
@@ -37,54 +38,54 @@
       ".contact-section"
     ],
     "data_flow": [
-      "User inputs data into contact form",
+      "User enters data in contact form fields",
       "Form submission triggers client-side validation",
       "On success, success-banner is shown and form cleared",
-      "On error, error-banner is shown with guidance",
-      "Dismiss buttons hide banners"
+      "On failure, error-banner is shown with guidance",
+      "Dismissal of banners hides them from view"
     ],
     "accessibility": [
       "Skip link for keyboard navigation",
-      "ARIA roles on navigation and banners",
+      "ARIA roles and labels on navigation and banners",
       "aria-live regions for dynamic alerts",
-      "aria-labels on interactive elements",
-      "Semantic headings and landmarks"
+      "Semantic headings and landmarks",
+      "Keyboard focusable buttons and links"
     ],
     "analytics": [
-      "Track form submission success and failure events",
+      "Track form submission success/failure events",
       "Track theme toggle usage",
       "Track navigation link clicks",
       "Track banner dismiss actions"
     ],
     "test_ideas": [
-      "Verify skip-to-content link focuses main content",
-      "Validate navbar links navigate correctly",
-      "Test theme toggle updates visual theme and persists state",
-      "Submit form with valid data and assert success-banner visibility",
-      "Submit form with invalid data and assert error-banner visibility",
-      "Ensure banner close buttons hide respective banners",
-      "Check ARIA attributes and live regions announce correctly",
-      "Confirm analytics events fire on form submission and theme toggle"
+      "Verify skip-to-content link moves focus to main content",
+      "Validate navbar links navigate correctly and active state updates",
+      "Test theme toggle changes visual theme and persists state if applicable",
+      "Submit form with valid data and confirm success-banner appears",
+      "Submit form with invalid data and confirm error-banner appears",
+      "Ensure banner-close buttons hide banners and restore focus appropriately",
+      "Check accessibility attributes (aria-live, aria-label) are present and functional",
+      "Confirm analytics events fire on key interactions"
     ]
   },
   "digital-experience-healthcare/index.html": {
     "summary_file": "artifacts/code-summaries/digital-experience-healthcare/index.html.summary.json",
     "language": "HTML",
     "truncated": false,
-    "overview": "Landing page for Digital Experience Healthcare featuring navigation, hero content, introduction cards, and a call-to-action section. Focuses on accessibility, responsive layout, and user engagement through navigation and theme toggling.",
+    "overview": "Landing page for Digital Experience Healthcare featuring navigation, hero, introduction, and call-to-action sections. Focused on accessibility, branding, and user engagement.",
     "key_components": [
       "Skip to content link",
-      "Sticky navigation bar with brand and menu links",
+      "Sticky navigation bar with brand and menu",
       "Theme toggle button",
-      "Hero section with heading, subtitle, and image",
-      "Introduction section with feature cards",
-      "Call-to-action section with buttons"
+      "Hero section with title, subtitle, and image",
+      "Introduction section with three informational cards",
+      "Call-to-action section with heading and buttons"
     ],
     "interactions": [
-      "Clicking navigation links routes to internal pages",
-      "Theme toggle button switches between light and dark modes",
-      "Skip to content link jumps focus to main content",
-      "CTA buttons likely navigate to service or contact pages"
+      "Click skip-to-content link to jump to main content",
+      "Navigate via navbar links (Home, More Information, Contact Us)",
+      "Toggle dark/light mode using theme-toggle button",
+      "Click CTA buttons to explore services or schedule appointments"
     ],
     "routes": [
       "./index.html",
@@ -102,40 +103,41 @@
       ".cta-section"
     ],
     "data_flow": [
-      "Static HTML content rendered client-side",
-      "Theme toggle updates DOM state via aria-pressed attribute",
-      "Navigation links trigger full page reloads to other static routes",
-      "No dynamic data fetching or API calls observed"
+      "Static HTML content rendered from index.html",
+      "Theme toggle updates UI state (aria-pressed attribute)",
+      "Navigation links route to other static pages",
+      "CTA buttons likely trigger navigation or form interactions"
     ],
     "accessibility": [
       "Skip link for keyboard navigation",
-      "ARIA labels on navigation and buttons",
-      "Semantic headings and landmark roles",
-      "Alt attributes on images (decorative image marked aria-hidden)",
-      "Color contrast and focus states should be verified"
+      "ARIA labels for navigation and buttons",
+      "Proper heading hierarchy (h1, h2, h3)",
+      "Alt attribute on hero image (empty for decorative)",
+      "aria-current on active navigation link",
+      "aria-hidden used for decorative icons"
     ],
     "analytics": [
       "Potential page view tracking on route changes",
-      "Theme toggle interaction tracking",
-      "CTA button click tracking for conversion metrics",
-      "Navigation link click events for engagement analytics"
+      "Theme toggle interaction event",
+      "CTA button click events for conversion tracking",
+      "Navbar link click events for navigation analytics"
     ],
     "test_ideas": [
-      "Verify skip-to-content link moves focus correctly",
-      "Validate navbar links navigate to correct routes",
-      "Check theme toggle updates aria-pressed and visual theme",
-      "Ensure hero and intro sections render expected text and structure",
-      "Confirm CTA buttons are visible and functional",
-      "Run accessibility audit for ARIA compliance and keyboard navigation",
-      "Validate responsive layout across viewport sizes",
-      "Track analytics events firing on key interactions"
+      "Verify skip-to-content link focuses main content",
+      "Validate navbar links navigate correctly",
+      "Check theme-toggle updates aria-pressed and visual theme",
+      "Ensure hero section renders with correct text and image",
+      "Confirm introduction cards display correct titles and descriptions",
+      "Test CTA buttons are visible and clickable",
+      "Run accessibility audit for ARIA and heading structure",
+      "Validate favicon and meta tags load correctly"
     ]
   },
   "digital-experience-healthcare/main.js": {
     "summary_file": "artifacts/code-summaries/digital-experience-healthcare/main.js.summary.json",
     "language": "JavaScript",
     "truncated": false,
-    "overview": "This JavaScript file initializes interactive behaviors for a healthcare website, including theme toggling, back-to-top visibility, navbar highlighting, skip-to-content accessibility, toast notifications, and contact form validation. It also integrates lightweight analytics logging and respects user motion preferences.",
+    "overview": "This script initializes interactive behaviors for a healthcare website, including theme toggling, back-to-top visibility, navbar highlighting, skip-to-content accessibility, toast notifications, and contact form validation. It also logs analytics events and respects user motion preferences.",
     "key_components": [
       "Theme toggle system",
       "Back-to-top button",
@@ -146,8 +148,8 @@
       "Analytics logger"
     ],
     "interactions": [
-      "Click theme toggle to switch between light/dark themes",
-      "Scroll to trigger back-to-top visibility",
+      "Click theme toggle to switch between light and dark themes",
+      "Scroll to reveal or hide back-to-top button",
       "Click back-to-top to scroll smoothly to top",
       "Navbar links highlight based on current route",
       "Click skip-to-content to focus main content",
@@ -155,8 +157,8 @@
       "Form submission validation and feedback (implied)"
     ],
     "routes": [
-      "Dynamic detection of current pathname via window.location.pathname",
-      "Navbar link highlighting based on href match"
+      "Dynamic detection via window.location.pathname for navbar highlighting",
+      "No explicit route navigation; relies on anchor hrefs"
     ],
     "selectors": [
       "[data-testid='theme-toggle']",
@@ -164,50 +166,47 @@
       "[data-testid='navbar']",
       "[data-testid='skip-to-content']",
       "[data-testid='toast']",
-      "[data-testid='contact-form']",
-      "main, #main-content"
+      "[data-testid='contact-form']"
     ],
     "data_flow": [
       "Theme preference stored and retrieved from localStorage",
       "Analytics events pushed to window.analyticsLog",
-      "Scroll position drives back-to-top visibility",
+      "Scroll position triggers UI visibility changes",
       "Toast messages dynamically created and dismissed",
-      "Form data validation triggers UI feedback (implied)"
+      "Form data expected to be validated before submission"
     ],
     "accessibility": [
-      "Aria attributes for toast visibility and live region",
-      "Aria-hidden toggling for back-to-top button",
-      "Aria-current for active navbar link",
-      "Skip-to-content focuses main content with tabindex",
+      "Aria attributes for visibility and live regions on toast",
+      "Aria-current for active navbar links",
+      "Skip-to-content link focuses main content with tabindex",
+      "Back-to-top button toggles aria-hidden",
       "Respects prefers-reduced-motion media query"
     ],
     "analytics": [
       "logAnalytics('theme_toggle', { theme }) on theme change",
-      "window.analyticsLog array stores event objects with timestamps",
+      "window.analyticsLog array stores all events with timestamps",
       "Console output for analytics debugging"
     ],
     "test_ideas": [
       "Verify theme toggle updates DOM attribute and localStorage",
-      "Ensure analytics event logged on theme toggle",
-      "Validate back-to-top visibility toggles after scrolling past threshold",
+      "Ensure back-to-top button visibility toggles after scrolling past threshold",
       "Confirm smooth scroll behavior respects reduced motion setting",
-      "Check navbar highlights correct link for current route",
-      "Test skip-to-content focuses main content and scrolls correctly",
-      "Verify toast creation, visibility, and dismissal timing",
-      "Confirm aria attributes update correctly for accessibility",
-      "Simulate missing elements to ensure defensive null checks work"
+      "Validate navbar highlights correct link based on pathname",
+      "Check skip-to-content focuses main content and scrolls correctly",
+      "Assert toast creation, visibility, and dismissal timing",
+      "Confirm analytics events are logged with correct payloads",
+      "Test accessibility attributes update correctly during interactions"
     ]
   },
   "digital-experience-healthcare/more-information.html": {
     "summary_file": "artifacts/code-summaries/digital-experience-healthcare/more-information.html.summary.json",
     "language": "HTML",
     "truncated": false,
-    "overview": "The 'More Information' page provides a searchable and filterable interface for healthcare services, including navigation, theme toggling, and accessibility features. It displays service cards dynamically after initial skeleton loaders.",
+    "overview": "The 'More Information' page provides healthcare service discovery through search, category filters, and sorting. It includes a sticky navigation bar, accessibility features, and dynamic service card rendering.",
     "key_components": [
       "Skip to content link",
-      "Sticky navigation bar with brand and links",
-      "Theme toggle button",
-      "Search input",
+      "Sticky navigation bar with theme toggle",
+      "Search input and icon",
       "Filter chips for service categories",
       "Sort dropdown",
       "Service cards grid with skeleton loaders"
@@ -215,10 +214,10 @@
     "interactions": [
       "Click skip link to jump to main content",
       "Toggle dark/light theme via theme-toggle button",
-      "Enter text in search input to filter services",
+      "Type in search input to filter services",
       "Click filter chips to apply category filters",
-      "Change sort dropdown to reorder service cards",
-      "Navigate between pages using navbar links"
+      "Change sort dropdown to reorder services",
+      "Navigate via navbar links"
     ],
     "routes": [
       "./index.html",
@@ -236,61 +235,55 @@
       "#service-cards-container"
     ],
     "data_flow": [
-      "User input in search field triggers filtering of service cards",
-      "Filter chip clicks modify displayed categories",
+      "User input in search field triggers filtering logic",
+      "Filter chip clicks modify displayed service categories",
       "Sort dropdown changes order of service cards",
-      "Initial skeleton loaders replaced by fetched service data",
-      "Theme toggle updates global UI state"
+      "Service data fetched and rendered dynamically replacing skeleton loaders"
     ],
     "accessibility": [
-      "Skip link enables keyboard users to bypass navigation",
-      "ARIA labels for navigation and filter groups",
+      "Skip link for keyboard navigation",
+      "ARIA labels on navigation and interactive elements",
       "Visually hidden labels for search input",
-      "aria-current used for active page link",
-      "aria-hidden applied to decorative icons and loaders"
+      "Role='group' for filter chips",
+      "aria-current on active navbar link"
     ],
     "analytics": [
       "Track search input usage and query terms",
-      "Log filter chip selections",
-      "Monitor sort dropdown changes",
-      "Record theme toggle events",
-      "Page view tracking for 'More Information' route"
+      "Track filter chip selections",
+      "Track sort dropdown changes",
+      "Track theme toggle interactions",
+      "Track navigation link clicks"
     ],
     "test_ideas": [
       "Verify skip link focuses main content",
-      "Ensure navbar links navigate correctly",
-      "Validate theme toggle updates UI and persists state",
+      "Validate navbar links navigate correctly",
+      "Ensure theme toggle updates UI state and persists preference",
       "Test search input filters service cards dynamically",
-      "Confirm filter chips toggle active state and filter results",
-      "Check sort dropdown reorders services correctly",
-      "Assert skeleton loaders replaced with service cards after data load",
-      "Run accessibility audit for ARIA and keyboard navigation"
+      "Confirm filter chips apply correct category filters",
+      "Check sort dropdown reorders services properly",
+      "Assert skeleton loaders replaced by service cards after data load",
+      "Run accessibility audit for ARIA compliance and keyboard navigation"
     ]
   },
   "digital-experience-healthcare/styles.css": {
     "summary_file": "artifacts/code-summaries/digital-experience-healthcare/styles.css.summary.json",
     "language": "CSS",
     "truncated": true,
-    "overview": "The stylesheet defines a healthcare digital experience design system with CSS resets, design tokens, typography, layout utilities, accessibility helpers, and theme support. It establishes consistent spacing, color, and typography scales for responsive and accessible UI components.",
+    "overview": "The stylesheet defines a design system for a healthcare digital experience, including CSS resets, design tokens, typography, layout utilities, accessibility helpers, and theme variables for light and dark modes. It establishes consistent spacing, color, and typography scales for frontend components.",
     "key_components": [
-      "Global CSS Reset",
+      "CSS Reset and Base Typography",
       "Design Tokens (:root variables)",
-      "Typography (headings, paragraphs)",
-      "Layout Utilities (.container, grid)",
       "Accessibility Utilities (.visually-hidden, .skip-link)",
-      "Theme Support ([data-theme='dark'])",
-      "Navbar and Hero Containers"
+      "Layout Utilities (.container, grid)",
+      "Theme Support ([data-theme='dark'])"
     ],
     "interactions": [
       "Focus state for skip links reveals accessibility navigation",
       "Responsive typography scaling via media queries",
-      "Dark/light theme switching through data-theme attribute"
+      "Container padding adjusts at breakpoints"
     ],
     "routes": [
-      "/",
-      "/home",
-      "/content",
-      "/accessibility"
+      "No explicit frontend routes defined; styles apply globally across all pages"
     ],
     "selectors": [
       ":root",
@@ -298,35 +291,32 @@
       "body",
       "h1, h2, h3, h4, h5, h6",
       "p",
-      ".container",
       ".visually-hidden",
       ".skip-link",
       ".skip-to-content",
+      ".container",
       "[data-theme='dark']"
     ],
     "data_flow": [
-      "CSS variables cascade from :root to components",
-      "Theme overrides applied via [data-theme='dark']",
-      "Responsive adjustments through media queries"
+      "CSS variables cascade from :root and [data-theme='dark'] to components",
+      "Media queries modify font sizes and spacing based on viewport width",
+      "Focus states trigger visual transitions for accessibility elements"
     ],
     "accessibility": [
-      "Skip link visible on focus for keyboard users",
-      ".visually-hidden class hides content visually but keeps it accessible to screen readers",
+      "Visually hidden utility for screen-reader-only content",
+      "Skip link focus behavior for keyboard navigation",
       "High contrast focus outlines using --color-focus and --color-focus-ring"
     ],
     "analytics": [
-      "Potential analytics hook on theme toggle",
-      "Track skip-link usage for accessibility engagement",
-      "Monitor responsive breakpoint usage for device analytics"
+      "No direct analytics hooks in CSS; potential integration points via skip-link usage or theme toggling events"
     ],
     "test_ideas": [
-      "Verify skip-link visibility and focus behavior with keyboard navigation",
+      "Verify skip-link visibility and focus behavior using keyboard navigation",
       "Validate dark theme variable overrides for color contrast compliance",
-      "Check responsive typography scaling at defined breakpoints",
+      "Check responsive typography scaling at defined breakpoints (768px, 1024px)",
       "Ensure container width and padding adjust correctly across viewport sizes",
-      "Confirm visually-hidden elements remain accessible to screen readers",
-      "Test CSS variable inheritance and fallback behavior",
-      "Validate focus outlines meet accessibility contrast ratios"
+      "Confirm visually-hidden elements are not visible but accessible to screen readers",
+      "Test CSS variable inheritance and fallback behavior when theme changes"
     ]
   }
 }

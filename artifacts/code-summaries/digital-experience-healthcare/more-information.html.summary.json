@@ -1,12 +1,11 @@
 {
   "file_path": "digital-experience-healthcare/more-information.html",
   "language": "HTML",
-  "overview": "The 'More Information' page provides a searchable and filterable interface for healthcare services, including navigation, theme toggling, and accessibility features. It displays service cards dynamically after initial skeleton loaders.",
+  "overview": "The 'More Information' page provides healthcare service discovery through search, category filters, and sorting. It includes a sticky navigation bar, accessibility features, and dynamic service card rendering.",
   "key_components": [
     "Skip to content link",
-    "Sticky navigation bar with brand and links",
-    "Theme toggle button",
-    "Search input",
+    "Sticky navigation bar with theme toggle",
+    "Search input and icon",
     "Filter chips for service categories",
     "Sort dropdown",
     "Service cards grid with skeleton loaders"
@@ -14,10 +13,10 @@
   "interactions": [
     "Click skip link to jump to main content",
     "Toggle dark/light theme via theme-toggle button",
-    "Enter text in search input to filter services",
+    "Type in search input to filter services",
     "Click filter chips to apply category filters",
-    "Change sort dropdown to reorder service cards",
-    "Navigate between pages using navbar links"
+    "Change sort dropdown to reorder services",
+    "Navigate via navbar links"
   ],
   "routes": [
     "./index.html",
@@ -35,34 +34,33 @@
     "#service-cards-container"
   ],
   "data_flow": [
-    "User input in search field triggers filtering of service cards",
-    "Filter chip clicks modify displayed categories",
+    "User input in search field triggers filtering logic",
+    "Filter chip clicks modify displayed service categories",
     "Sort dropdown changes order of service cards",
-    "Initial skeleton loaders replaced by fetched service data",
-    "Theme toggle updates global UI state"
+    "Service data fetched and rendered dynamically replacing skeleton loaders"
   ],
   "accessibility": [
-    "Skip link enables keyboard users to bypass navigation",
-    "ARIA labels for navigation and filter groups",
+    "Skip link for keyboard navigation",
+    "ARIA labels on navigation and interactive elements",
     "Visually hidden labels for search input",
-    "aria-current used for active page link",
-    "aria-hidden applied to decorative icons and loaders"
+    "Role='group' for filter chips",
+    "aria-current on active navbar link"
   ],
   "analytics": [
     "Track search input usage and query terms",
-    "Log filter chip selections",
-    "Monitor sort dropdown changes",
-    "Record theme toggle events",
-    "Page view tracking for 'More Information' route"
+    "Track filter chip selections",
+    "Track sort dropdown changes",
+    "Track theme toggle interactions",
+    "Track navigation link clicks"
   ],
   "test_ideas": [
     "Verify skip link focuses main content",
-    "Ensure navbar links navigate correctly",
-    "Validate theme toggle updates UI and persists state",
+    "Validate navbar links navigate correctly",
+    "Ensure theme toggle updates UI state and persists preference",
     "Test search input filters service cards dynamically",
-    "Confirm filter chips toggle active state and filter results",
-    "Check sort dropdown reorders services correctly",
-    "Assert skeleton loaders replaced with service cards after data load",
-    "Run accessibility audit for ARIA and keyboard navigation"
+    "Confirm filter chips apply correct category filters",
+    "Check sort dropdown reorders services properly",
+    "Assert skeleton loaders replaced by service cards after data load",
+    "Run accessibility audit for ARIA compliance and keyboard navigation"
   ]
 }

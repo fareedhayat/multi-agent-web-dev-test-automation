@@ -20,18 +20,39 @@ from agent_framework import ai_function
 from agent_framework.azure import AzureOpenAIAssistantsClient
 from dotenv import load_dotenv
 
+try:
+    from .test_writer_helpers import (
+        SUMMARY_FILENAME,
+        TEST_PLAN_FILENAME,
+        CODE_SUMMARY_DIRNAME,
+        CODE_SUMMARY_EXTENSION,
+        format_summary_text,
+        summarize_requirements_with_llm,
+        collect_artifact_files,
+        summarize_code_files,
+        generate_test_plan_with_anthropic,
+    )
+except ImportError:  # Allow running as a stand-alone script
+    import sys
 
-from .test_writer_helpers import (
-    SUMMARY_FILENAME,
-    TEST_PLAN_FILENAME,
-    CODE_SUMMARY_DIRNAME,
-    CODE_SUMMARY_EXTENSION,
-    format_summary_text,
-    summarize_requirements_with_llm,
-    collect_artifact_files,
-    summarize_code_files,
-    generate_test_plan_with_anthropic,
-)
+    CURRENT_DIR = Path(__file__).resolve().parent
+    if str(CURRENT_DIR) not in sys.path:
+        sys.path.insert(0, str(CURRENT_DIR))
+    PARENT_DIR = CURRENT_DIR.parent
+    if str(PARENT_DIR) not in sys.path:
+        sys.path.insert(0, str(PARENT_DIR))
+
+    from test_writer_helpers import (  # type: ignore
+        SUMMARY_FILENAME,
+        TEST_PLAN_FILENAME,
+        CODE_SUMMARY_DIRNAME,
+        CODE_SUMMARY_EXTENSION,
+        format_summary_text,
+        summarize_requirements_with_llm,
+        collect_artifact_files,
+        summarize_code_files,
+        generate_test_plan_with_anthropic,
+    )
 
 load_dotenv()
 
@@ -240,5 +261,22 @@ async def main() -> None:
             print()
 
 
+async def run_auto_workflow() -> None:
+    """Run the three tools sequentially to produce summaries and the test plan."""
+    print("Running requirements_file_parser...")
+    requirements_result = await requirements_file_parser()
+    # print(f"Requirements summary written to {requirements_result['summary_file']}")
+
+    print("Running generated_code_parser...")
+    code_result = await generated_code_parser()
+    # print(f"Code manifest written to {code_result['manifest_file']}")
+
+    print("Running test_generator...")
+    test_result = await test_generator()
+    # print(f"Test plan written to {test_result['test_plan_file']}")
+
+    print("All artifacts generated successfully.")
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(run_auto_workflow())

@@ -74,7 +74,7 @@ TEST_GENERATION_SYSTEM_PROMPT = (
 )
 
 
-def sanitize_ascii(value: str) -> str:
+def sanitize_ascii(value: str, *, preserve_newlines: bool = False) -> str:
     normalized = unicodedata.normalize("NFKC", value)
     replacements = {
         "–": "-",
@@ -87,6 +87,10 @@ def sanitize_ascii(value: str) -> str:
     }
     for source, target in replacements.items():
         normalized = normalized.replace(source, target)
+    if preserve_newlines:
+        normalized = normalized.replace("\r\n", "\n").replace("\r", "\n")
+        lines = [" ".join(line.split()) for line in normalized.split("\n")]
+        return "\n".join(lines).strip()
     return " ".join(normalized.split())
 
 
@@ -525,7 +529,7 @@ async def generate_test_plan_with_anthropic(
         ChatMessage(role="user", text=prompt),
     ]
 
-    response = await client.get_response(messages, temperature=0.2, max_tokens=1400)
+    response = await client.get_response(messages, temperature=0.2, max_tokens=3200)
     raw_text = extract_text_from_response(response)
 
     if not raw_text:
@@ -538,10 +542,10 @@ async def generate_test_plan_with_anthropic(
                 ),
             )
         ]
-        response = await client.get_response(retry_messages, temperature=0.2, max_tokens=1400)
+        response = await client.get_response(retry_messages, temperature=0.2, max_tokens=3200)
         raw_text = extract_text_from_response(response)
 
     if not raw_text:
         raise ValueError("Test generation model returned an empty response after retry.")
 
-    return sanitize_ascii(raw_text)
+    return sanitize_ascii(raw_text, preserve_newlines=True)
