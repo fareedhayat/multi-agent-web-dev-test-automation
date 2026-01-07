@@ -52,6 +52,71 @@ def read_test_plan(plan_path: Path) -> str:
     return plan_path.read_text(encoding="utf-8").strip()
 
 
+def build_execution_prompt(plan_markdown: str) -> str:
+    """Create the prompt that instructs the agent how to execute the plan."""
+    return (
+        "You are a QA automation executor. You receive a Playwright test plan in Markdown. "
+        "For each suite and scenario, translate the intent into concrete Playwright test steps. "
+        "Use the Playwright MCP tool to run the necessary tests against the target application. "
+        "Report consolidated pass/fail results, notable logs, and any follow-up actions.\n\n"
+        "Playwright Test Plan:\n\n"
+        f"{plan_markdown}"
+    )
+
+
+def start_local_server(
+    *,
+    command: Optional[list[str]] = None,
+    cwd: Optional[Path] = None,
+    timeout: int = SERVER_READY_TIMEOUT,
+) -> subprocess.Popen[str]:
+    """Start the local server hosting the generated app."""
+    server_cmd = list(command or DEFAULT_SERVER_COMMAND)
+    server_cwd = cwd or DEFAULT_SERVER_CWD
+    if not server_cwd.is_absolute():
+        server_cwd = (PROJECT_ROOT / server_cwd).resolve()
+
+    if not server_cwd.exists():
+        raise FileNotFoundError(
+            f"Server directory not found at {server_cwd}. Generate the site before running tests."
+        )
+
+    process = subprocess.Popen(
+        server_cmd,
+        cwd=server_cwd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+
+    start_time = time.time()
+    while True:
+        if process.poll() is not None:
+            raise RuntimeError(
+                "Local server terminated unexpectedly before readiness.\n"
+                f"Command: {' '.join(server_cmd)}"
+            )
+        if time.time() - start_time >= timeout:
+            process.terminate()
+            raise TimeoutError(
+                f"Server did not become ready within {timeout} seconds."
+            )
+        time.sleep(SERVER_CHECK_INTERVAL)
+        break
+
+    return process
+
+
+def stop_local_server(process: subprocess.Popen[str]) -> None:
+    """Stop the previously started local server."""
+    if process.poll() is not None:
+        return
+    with contextlib.suppress(Exception):
+        process.terminate()
+        process.wait(timeout=5)
+    if process.poll() is None:
+        with contextlib.suppress(Exception):
+            process.kill()
 
 
 async def run_playwright_test_agent(
