@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Digital Experience Healthcare - Your trusted partner for comprehensive healthcare services. Explore our services and get in touch with our team.">
+  <title>Home | Digital Experience Healthcare</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-to-content" data-testid="skip-to-content">
+    Skip to main content
+  </a>
+
+  <!-- Sticky Navigation Bar -->
+  <nav class="navbar" data-testid="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <a href="./index.html" aria-label="Digital Experience Healthcare Home">
+          <span class="brand-icon" aria-hidden="true">🏥</span>
+          <span class="brand-name">Digital Experience</span>
+        </a>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="./index.html" class="navbar-link active" aria-current="page">Home</a></li>
+        <li><a href="./more-info.html" class="navbar-link">More Information</a></li>
+        <li><a href="./contact.html" class="navbar-link">Contact Us</a></li>
+      </ul>
+      <button 
+        type="button" 
+        class="theme-toggle" 
+        data-testid="theme-toggle" 
+        aria-label="Toggle dark mode"
+        aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main-content" data-testid="main-content">
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-content">
+        <h1 id="hero-heading" class="hero-title">
+          Welcome to Digital Experience Healthcare
+        </h1>
+        <p class="hero-subtitle">
+          Compassionate care, cutting-edge technology, and a commitment to your well-being.
+        </p>
+        <p class="hero-description">
+          We provide comprehensive healthcare services tailored to your needs. From primary care to specialized treatments, our experienced team is here to support your health journey every step of the way.
+        </p>
+      </div>
+      <div class="hero-image" role="img" aria-label="Healthcare professionals providing compassionate care">
+        <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="800" height="600" fill="var(--hero-bg, #e3f2fd)"/>
+          <circle cx="400" cy="300" r="120" fill="var(--primary-color, #1976d2)" opacity="0.1"/>
+          <path d="M 380 250 L 380 350 M 330 300 L 430 300" stroke="var(--primary-color, #1976d2)" stroke-width="20" stroke-linecap="round"/>
+          <text x="400" y="450" font-size="24" fill="var(--text-secondary, #666)" text-anchor="middle" font-family="system-ui, sans-serif">Your Health, Our Priority</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Brief Introduction Section -->
+    <section class="introduction" aria-labelledby="intro-heading">
+      <div class="container">
+        <h2 id="intro-heading" class="section-title">Why Choose Digital Experience?</h2>
+        <div class="intro-grid">
+          <article class="intro-card">
+            <div class="intro-icon" aria-hidden="true">👨‍⚕️</div>
+            <h3 class="intro-card-title">Expert Team</h3>
+            <p class="intro-card-description">
+              Board-certified physicians and specialists dedicated to delivering personalized, evidence-based care.
+            </p>
+          </article>
+          <article class="intro-card">
+            <div class="intro-icon" aria-hidden="true">🏥</div>
+            <h3 class="intro-card-title">Modern Facilities</h3>
+            <p class="intro-card-description">
+              State-of-the-art equipment and comfortable environments designed with your comfort in mind.
+            </p>
+          </article>
+          <article class="intro-card">
+            <div class="intro-icon" aria-hidden="true">💙</div>
+            <h3 class="intro-card-title">Patient-Centered</h3>
+            <p class="intro-card-description">
+              We listen, we care, and we partner with you to achieve the best possible health outcomes.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call-to-Action Section -->
+    <section class="cta-section" aria-labelledby="cta-heading">
+      <div class="container">
+        <h2 id="cta-heading" class="section-title">Ready to Get Started?</h2>
+        <p class="cta-description">
+          Explore our comprehensive services or reach out to schedule an appointment today.
+        </p>
+        <div class="cta-buttons" role="group" aria-label="Primary actions">
+          <a 
+            href="./more

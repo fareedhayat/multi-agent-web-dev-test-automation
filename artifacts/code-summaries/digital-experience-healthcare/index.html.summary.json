@@ -1,0 +1,63 @@
+{
+  "file_path": "digital-experience-healthcare/index.html",
+  "language": "HTML",
+  "overview": "Landing page for Digital Experience Healthcare featuring navigation, hero, introduction, and call-to-action sections. Focused on accessibility, branding, and user engagement.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with brand and menu",
+    "Theme toggle button",
+    "Hero section with SVG illustration",
+    "Introduction section with feature cards",
+    "Call-to-action section with buttons"
+  ],
+  "interactions": [
+    "Click skip-to-content link to jump to main content",
+    "Navigate via navbar links (Home, More Information, Contact Us)",
+    "Toggle dark/light mode using theme-toggle button",
+    "Click CTA buttons to navigate to service or contact pages"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-info.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    ".navbar-link.active",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    ".hero-title",
+    ".intro-card",
+    ".cta-section"
+  ],
+  "data_flow": [
+    "Static HTML content rendered from index.html",
+    "Theme toggle updates CSS variables or class for dark mode",
+    "Navigation links route to other static pages",
+    "No dynamic data fetching detected"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA roles and labels on nav and buttons",
+    "Descriptive alt text via aria-label on hero image",
+    "Semantic headings (h1, h2, h3) for structure",
+    "Color contrast validation for theme toggle and hero section"
+  ],
+  "analytics": [
+    "Potential page view tracking on route changes",
+    "Theme toggle interaction event",
+    "CTA button click events for conversion tracking",
+    "Navbar link click events for navigation analytics"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link focuses main content",
+    "Validate navbar links navigate correctly",
+    "Check theme toggle updates aria-pressed and visual theme",
+    "Ensure hero section renders SVG correctly",
+    "Confirm introduction cards display expected text and icons",
+    "Test CTA buttons navigate to correct routes",
+    "Run accessibility audit (ARIA roles, labels, contrast)",
+    "Validate analytics events fire on user interactions"
+  ]
+}

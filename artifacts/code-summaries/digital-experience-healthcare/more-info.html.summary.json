@@ -1,0 +1,66 @@
+{
+  "file_path": "digital-experience-healthcare/more-info.html",
+  "language": "HTML",
+  "overview": "The 'More Information' page of Digital Experience Healthcare provides search, filter, and sorting capabilities for healthcare services. It includes a sticky navigation bar, accessibility features, and dynamic service card rendering via JavaScript.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with theme toggle",
+    "Page header section",
+    "Search input and filter chips",
+    "Sort dropdown",
+    "Service cards grid with skeleton loaders"
+  ],
+  "interactions": [
+    "Click theme toggle to switch dark/light mode",
+    "Type in search input to filter services",
+    "Click filter chips to refine displayed services",
+    "Select sort option to reorder service cards",
+    "Navigation links route between pages"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-info.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    "[data-testid='search-input']",
+    "[data-testid^='filter-chip-']",
+    "[data-testid='sort-dropdown']",
+    "[data-testid='skeleton-loader']"
+  ],
+  "data_flow": [
+    "User input in search field triggers client-side filtering of service cards",
+    "Filter chip clicks apply category-based filtering",
+    "Sort dropdown changes sorting order of displayed services",
+    "Skeleton loaders replaced by fetched service data via JS"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA labels for navigation and filter groups",
+    "Visually hidden labels for search input and help text",
+    "aria-current on active navigation link",
+    "aria-hidden on decorative icons and skeleton loaders"
+  ],
+  "analytics": [
+    "Track theme toggle usage",
+    "Track search input changes",
+    "Track filter chip selections",
+    "Track sort dropdown changes",
+    "Track navigation link clicks"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link focuses main content",
+    "Validate navbar links navigate correctly",
+    "Ensure theme toggle updates UI and persists state",
+    "Test search input filters service cards dynamically",
+    "Confirm filter chips apply correct category filters",
+    "Check sort dropdown reorders cards properly",
+    "Assert skeleton loaders replaced with service data",
+    "Validate accessibility attributes and keyboard navigation",
+    "Verify analytics events fire on key interactions"
+  ]
+}

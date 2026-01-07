@@ -1,0 +1,65 @@
+{
+  "file_path": "digital-experience-healthcare/main.js",
+  "language": "JavaScript",
+  "overview": "Framework-free JavaScript powering interactive and accessible behaviors for a healthcare website, including theme toggling, navigation highlighting, back-to-top control, skip-to-content accessibility, CTA analytics, and toast notifications.",
+  "key_components": [
+    "Theme toggle system with localStorage persistence",
+    "Back-to-top button with scroll visibility logic",
+    "Skip-to-content accessibility link",
+    "Navbar active state management",
+    "CTA buttons for services and contact",
+    "Toast notification system",
+    "Analytics event logger"
+  ],
+  "interactions": [
+    "Click theme toggle to switch between light/dark themes",
+    "Scroll to trigger back-to-top visibility",
+    "Click back-to-top to smooth scroll to top",
+    "Click skip-to-content to focus main content",
+    "Navbar links highlight based on current route",
+    "Click CTA buttons to log analytics events",
+    "Show and hide toast messages with auto-dismiss and manual close"
+  ],
+  "routes": [
+    "Dynamic detection of current pathname for navbar highlighting",
+    "CTA links likely route to /services and /contact",
+    "No explicit SPA routing; relies on standard navigation"
+  ],
+  "selectors": [
+    "[data-testid='theme-toggle']",
+    "[data-testid='back-to-top']",
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='cta-services']",
+    "[data-testid='cta-contact']",
+    "[data-testid='toast']"
+  ],
+  "data_flow": [
+    "Theme preference stored and retrieved from localStorage",
+    "Analytics events pushed to window.analyticsLog array",
+    "Toast messages dynamically created and appended to DOM",
+    "Scroll and click events trigger UI updates and analytics logging"
+  ],
+  "accessibility": [
+    "Skip-to-content link focuses main content and supports keyboard users",
+    "Back-to-top button toggles aria-hidden for visibility state",
+    "Toast uses role='status' and aria-live='polite' for screen reader announcements",
+    "Navbar uses aria-current='page' for active link indication",
+    "Respects prefers-reduced-motion for smooth scrolling"
+  ],
+  "analytics": [
+    "logEvent('theme_toggle', { theme }) on theme change",
+    "logEvent('cta_click', { target }) on CTA interactions",
+    "window.analyticsLog array stores all event payloads with timestamps"
+  ],
+  "test_ideas": [
+    "Verify theme toggle updates DOM attribute, localStorage, and logs analytics event",
+    "Ensure back-to-top button visibility toggles correctly on scroll threshold",
+    "Confirm skip-to-content focuses main element and scrolls appropriately",
+    "Validate navbar highlights correct link based on current pathname",
+    "Check CTA buttons trigger correct analytics payloads",
+    "Test toast creation, visibility, auto-dismiss timing, and manual close behavior",
+    "Confirm prefers-reduced-motion disables smooth scrolling animations",
+    "Assert accessibility attributes (aria-current, aria-hidden, role, aria-live) are correctly applied"
+  ]
+}

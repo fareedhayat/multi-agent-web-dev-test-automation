@@ -1,0 +1,54 @@
+{
+  "file_path": "digital-experience-healthcare/styles.css",
+  "language": "CSS",
+  "overview": "The CSS defines the foundational design system and layout utilities for a healthcare digital experience frontend. It includes resets, typography, color tokens, spacing, grid systems, accessibility utilities, and theme variables for light and dark modes.",
+  "key_components": [
+    "Global CSS reset",
+    "Design tokens (:root variables)",
+    "Typography hierarchy (h1-h6, hero, section titles)",
+    "Accessibility utilities (.visually-hidden, .skip-link)",
+    "Layout utilities (.container, .intro-grid, .service-cards-grid)",
+    "Dark theme support via [data-theme='dark']"
+  ],
+  "interactions": [
+    "Focus state visibility for .skip-link and .skip-to-content",
+    "Responsive grid adjustments at 640px, 768px, and 1024px breakpoints",
+    "Theme switching through [data-theme='dark'] attribute"
+  ],
+  "routes": [
+    "No explicit routes defined; CSS applies globally across all pages"
+  ],
+  "selectors": [
+    ".container",
+    ".navbar-container",
+    ".intro-grid",
+    ".service-cards-grid",
+    ".skip-link",
+    ".skip-to-content",
+    ".visually-hidden",
+    "[data-theme='dark']"
+  ],
+  "data_flow": [
+    "Design tokens cascade from :root to components",
+    "Theme variables overridden when [data-theme='dark'] is active",
+    "Responsive grid templates adjust based on viewport width"
+  ],
+  "accessibility": [
+    ".visually-hidden for screen-reader-only content",
+    ".skip-link and .skip-to-content for keyboard navigation",
+    "Focus outlines with high-contrast colors",
+    "Smooth scroll behavior for better navigation experience"
+  ],
+  "analytics": [
+    "No analytics hooks present in CSS; tracking expected at JS layer"
+  ],
+  "test_ideas": [
+    "Verify .skip-link becomes visible and focusable via keyboard tabbing",
+    "Validate dark theme variable overrides when [data-theme='dark'] is toggled",
+    "Check responsive grid layouts at defined breakpoints",
+    "Ensure all text elements inherit correct typography tokens",
+    "Confirm visually hidden elements remain accessible to screen readers",
+    "Test color contrast ratios meet WCAG AA standards",
+    "Validate container max-width and padding across viewport sizes"
+  ]
+}

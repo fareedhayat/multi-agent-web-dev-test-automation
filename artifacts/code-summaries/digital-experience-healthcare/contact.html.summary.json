@@ -1,0 +1,66 @@
+{
+  "file_path": "digital-experience-healthcare/contact.html",
+  "language": "HTML",
+  "overview": "The contact page for Digital Experience Healthcare provides users with a form to reach out for inquiries or support, displays contact information, and includes success/error banners for form submission feedback. It features a responsive navigation bar, accessibility enhancements, and a theme toggle.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with theme toggle",
+    "Contact hero section",
+    "Success and error banners",
+    "Contact information sidebar",
+    "Contact form section"
+  ],
+  "interactions": [
+    "Click skip link to jump to main content",
+    "Toggle dark/light mode via theme toggle button",
+    "Submit contact form and trigger success or error banners",
+    "Dismiss banners using close buttons",
+    "Navigate via navbar links"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-info.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    "[data-testid='success-banner']",
+    "[data-testid='error-banner']",
+    ".banner-close",
+    ".contact-section form",
+    ".navbar-link.active"
+  ],
+  "data_flow": [
+    "User inputs data into contact form fields",
+    "Form submission triggers client-side validation",
+    "On success, success banner is shown and form resets",
+    "On failure, error banner is displayed with retry option",
+    "Dismiss actions hide banners"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA roles for navigation and alerts",
+    "aria-live regions for dynamic banners",
+    "aria-labels on interactive elements (theme toggle, close buttons)",
+    "Semantic headings and landmark elements"
+  ],
+  "analytics": [
+    "Track theme toggle usage",
+    "Track form submission success/failure events",
+    "Track navigation link clicks",
+    "Track banner dismiss actions"
+  ],
+  "test_ideas": [
+    "Verify skip link focuses main content",
+    "Validate theme toggle updates aria-pressed and visual theme",
+    "Submit form with valid data and assert success banner visibility",
+    "Submit form with invalid data and assert error banner visibility",
+    "Ensure banners can be dismissed and hidden",
+    "Check all navbar links navigate correctly",
+    "Confirm ARIA attributes and roles are present and valid",
+    "Validate analytics events fire on key interactions"
+  ]
+}
