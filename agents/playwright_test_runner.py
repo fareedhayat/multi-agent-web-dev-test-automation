@@ -6,9 +6,11 @@ import argparse
 import asyncio
 import contextlib
 import os
+import re
 import subprocess
 import time
 from pathlib import Path
+from collections import OrderedDict
 from typing import Annotated, Any, Dict, Optional
 
 from agent_framework import MCPStdioTool, ai_function
@@ -123,60 +125,186 @@ def stop_local_server(process: subprocess.Popen[str]) -> None:
             process.kill()
 
 
-def summarize_execution_output(output: str) -> str:
+def summarize_execution_output(output: str, plan_markdown: str | None = None) -> str:
     """Create a structured summary of the MCP execution output."""
     if not output.strip():
         return "No output was produced by PlaywrightRunnerAgent."
 
-    lines = [line.rstrip() for line in output.splitlines() if line.strip()]
+    normalized_output = output.replace("\r\n", "\n")
 
-    suites: Dict[str, Dict[str, list[str]]] = {}
-    current_suite = "General"
-    current_scenario = "Overview"
+    def sanitize_heading(text: str) -> str:
+        cleaned = re.sub(r"\s+", " ", text.strip())
+        cleaned = cleaned.strip("* ")
+        return cleaned
 
-    suites.setdefault(current_suite, {})
-    suites[current_suite].setdefault(current_scenario, [])
+    def parse_plan(markdown: str) -> OrderedDict[str, list[str]]:
+        suites = OrderedDict()
+        current_suite: Optional[str] = None
+        for raw_line in markdown.splitlines():
+            stripped = raw_line.strip()
+            if stripped.startswith("## "):
+                suite_name = sanitize_heading(stripped[3:])
+                current_suite = suite_name or "General"
+                suites.setdefault(current_suite, [])
+                continue
+            if stripped.startswith("###"):
+                scenario_name = sanitize_heading(stripped.lstrip("#"))
+                if not current_suite:
+                    current_suite = "General"
+                    suites.setdefault(current_suite, [])
+                suites[current_suite].append(scenario_name)
+        return suites
 
-    for line in lines:
-        cleaned = line.strip()
-        upper = cleaned.upper()
+    def humanize_sentence(sentence: str) -> str:
+        text = re.sub(r"\s+", " ", sentence.strip().rstrip(":"))
+        if not text:
+            return ""
+        lowered = text.lower()
+        replacements = [
+            ("let me ", "Attempted to "),
+            ("i'll ", "Planned to "),
+            ("i notice ", "Observation: "),
+            ("it appears ", "Observation: "),
+            ("perfect!", "Outcome:"),
+        ]
+        for trigger, repl in replacements:
+            if lowered.startswith(trigger):
+                text = repl + text[len(trigger):].lstrip()
+                break
+        if text and text[0].islower():
+            text = text[0].upper() + text[1:]
+        if len(text) > 250:
+            text = text[:247].rstrip() + "…"
+        return text
 
-        if cleaned.startswith("## "):
-            title = cleaned[3:].strip()
-            if title and not title.lower().startswith("suite"):
-                current_suite = title
-            else:
-                current_suite = title or current_suite
-            suites.setdefault(current_suite, {})
-            current_scenario = "Overview"
-            suites[current_suite].setdefault(current_scenario, [])
+    def extract_bullets(segment: str) -> list[str]:
+        cleaned_segment = segment.strip()
+        if not cleaned_segment:
+            return []
+        raw_lines = [line.strip() for line in cleaned_segment.splitlines() if line.strip()]
+        if not raw_lines:
+            raw_lines = [cleaned_segment]
+        fragments: list[str] = []
+        for raw_line in raw_lines:
+            if raw_line.startswith("##") or raw_line.startswith("###"):
+                continue
+            if raw_line.lower().startswith("summary saved to"):
+                continue
+            normalized = re.sub(r"\s+", " ", raw_line)
+            pieces = re.split(r"(?<=[\.\?\!])\s+(?=[A-Z])", normalized)
+            if not pieces:
+                pieces = [normalized]
+            for piece in pieces:
+                fragments.append(piece.strip())
+
+        bullets: list[str] = []
+        seen: set[str] = set()
+        for fragment in fragments:
+            sentence = humanize_sentence(fragment)
+            if not sentence:
+                continue
+            key = sentence.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            bullets.append(f"- {sentence}")
+        return bullets[:5]
+
+    plan_structure = parse_plan(plan_markdown) if plan_markdown else OrderedDict()
+
+    summary_data: OrderedDict[str, OrderedDict[str, list[str]]] = OrderedDict()
+    summary_data["General"] = OrderedDict()
+    summary_data["General"]["Overview"] = []
+
+    if plan_structure:
+        for suite_name, scenarios in plan_structure.items():
+            summary_data.setdefault(suite_name, OrderedDict())
+            for scenario_name in scenarios:
+                summary_data[suite_name][scenario_name] = []
+
+    lower_output = normalized_output.lower()
+
+    def locate_positions(phrases: list[str]) -> list[tuple[int, int, str]]:
+        positions: list[tuple[int, int, str]] = []
+        search_start = 0
+        for phrase in phrases:
+            target = phrase.lower()
+            idx = lower_output.find(target, search_start)
+            if idx == -1:
+                idx = lower_output.find(target)
+            if idx == -1:
+                continue
+            positions.append((idx, idx + len(phrase), phrase))
+            search_start = idx + len(phrase)
+        return sorted(positions, key=lambda item: item[0])
+
+    suite_positions = locate_positions(list(plan_structure.keys())) if plan_structure else []
+
+    if suite_positions:
+        first_suite_start = suite_positions[0][0]
+        general_segment = normalized_output[:first_suite_start].strip()
+        general_bullets = extract_bullets(general_segment)
+        if general_bullets:
+            summary_data["General"]["Overview"].extend(general_bullets)
+    else:
+        general_bullets = extract_bullets(normalized_output)
+        if general_bullets:
+            summary_data["General"]["Overview"].extend(general_bullets)
+
+    scenario_entries: list[tuple[Optional[int], Optional[int], str, str]] = []
+    if plan_structure:
+        search_cursor = 0
+        scenario_order: list[tuple[str, str]] = [
+            (suite, scenario) for suite, scenarios in plan_structure.items() for scenario in scenarios
+        ]
+        for suite_name, scenario_name in scenario_order:
+            target = scenario_name.lower()
+            idx = lower_output.find(target, search_cursor)
+            if idx == -1:
+                idx = lower_output.find(target)
+            if idx == -1:
+                scenario_entries.append((None, None, suite_name, scenario_name))
+                continue
+            scenario_entries.append((idx, idx + len(scenario_name), suite_name, scenario_name))
+            search_cursor = idx + len(scenario_name)
+
+    suite_boundaries = [pos for pos, _, _ in suite_positions]
+
+    for index, (start, end, suite_name, scenario_name) in enumerate(scenario_entries):
+        if start is None or end is None:
             continue
+        boundary_candidates: list[int] = []
+        for next_index in range(index + 1, len(scenario_entries)):
+            next_start = scenario_entries[next_index][0]
+            if next_start is not None:
+                boundary_candidates.append(next_start)
+                break
+        for suite_start in suite_boundaries:
+            if suite_start > end:
+                boundary_candidates.append(suite_start)
+                break
+        segment_end = min(boundary_candidates) if boundary_candidates else len(normalized_output)
+        segment_text = normalized_output[end:segment_end]
+        segment_text = segment_text.lstrip(" *#:-\n\r\t")
+        bullets = extract_bullets(segment_text)
+        if bullets:
+            summary_data.setdefault(suite_name, OrderedDict())
+            summary_data[suite_name].setdefault(scenario_name, [])
+            summary_data[suite_name][scenario_name].extend(bullets)
 
-        if cleaned.startswith("###"):
-            title = cleaned.lstrip("#").strip()
-            current_scenario = title or current_scenario
-            suites.setdefault(current_suite, {})
-            suites[current_suite].setdefault(current_scenario, [])
-            continue
-
-        status_keywords = ("✅", "❌", "⚠️", "⏭️", "PASS", "FAIL", "ERROR", "WARN")
-        if any(keyword in upper for keyword in status_keywords) or cleaned.startswith("-"):
-            suites[current_suite].setdefault(current_scenario, []).append(cleaned)
+    if not summary_data["General"]["Overview"]:
+        summary_data.pop("General")
 
     summary_lines = ["# Playwright MCP Test Summary", ""]
 
-    for suite_name, scenarios in suites.items():
+    for suite_name, scenarios in summary_data.items():
         summary_lines.append(f"## {suite_name}")
         for scenario_name, entries in scenarios.items():
             summary_lines.append(f"### {scenario_name}")
             if not entries:
                 summary_lines.append("- (no details captured)")
-                continue
-            for entry in entries:
-                bullet = entry
-                if not bullet.startswith("-"):
-                    bullet = f"- {bullet}"
-                summary_lines.append(bullet)
+            else:
+                summary_lines.extend(entries)
             summary_lines.append("")
         summary_lines.append("")
 
@@ -246,7 +374,7 @@ async def run_playwright_test_agent(
     }
 
     try:
-        context_manager = client.create_agent(max_output_tokens=8000, **agent_kwargs)
+        context_manager = client.create_agent(max_output_tokens=16000, **agent_kwargs)
     except TypeError:
         context_manager = client.create_agent(**agent_kwargs)
 
@@ -267,7 +395,7 @@ async def run_playwright_test_agent(
             stop_local_server(server_process)
 
     output_text = "".join(transcript).strip()
-    summary_text = summarize_execution_output(output_text)
+    summary_text = summarize_execution_output(output_text, plan_markdown)
     summary_path = write_summary_file(summary_text)
     try:
         relative_summary = summary_path.relative_to(PROJECT_ROOT).as_posix()
