@@ -1,13 +1,3 @@
-"""
-This agent goes through the requirements files and the artifacts folder to write a natural-language Playwright
-test suite.
-
-Tools:
-    - requirements parser (writes a summary of what was required)
-    - artifacts folder parser (writes a summary of what is present in code)
-    - tests generator (writes test cases for the application)
-"""
-
 from __future__ import annotations
 
 import asyncio
