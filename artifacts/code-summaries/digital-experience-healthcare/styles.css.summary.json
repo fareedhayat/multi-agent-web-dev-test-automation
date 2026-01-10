@@ -1,0 +1,65 @@
+{
+  "file_path": "digital-experience-healthcare/styles.css",
+  "language": "CSS",
+  "overview": "The CSS defines a responsive, accessible, and theme-aware layout for a healthcare digital experience frontend. It includes base resets, typography, layout utilities, grid systems, hero sections, banners, cards, and accessibility helpers. Design tokens are implemented via CSS custom properties for light and dark themes.",
+  "key_components": [
+    "Navbar",
+    "Hero section",
+    "Grid layouts (intro, services, contact)",
+    "Banner components (success, error)",
+    "Card components (intro-card, service-card, info-block)",
+    "Skip link and visually-hidden accessibility utilities",
+    "Container and spacing utilities"
+  ],
+  "interactions": [
+    "Hover and focus states on links and buttons",
+    "Responsive grid adjustments at breakpoints (640px, 768px, 1024px)",
+    "Skip-to-content focus reveal for keyboard navigation",
+    "Theme switching via [data-theme='dark']"
+  ],
+  "routes": [
+    "/",
+    "/services",
+    "/contact",
+    "/controls"
+  ],
+  "selectors": [
+    ".container",
+    ".intro-grid",
+    ".services-grid",
+    ".contact-grid",
+    ".navbar",
+    ".hero",
+    ".banner",
+    ".service-card",
+    ".skip-to-content",
+    ".visually-hidden"
+  ],
+  "data_flow": [
+    "CSS variables propagate theme and design tokens across components",
+    "Responsive media queries adjust layout dynamically",
+    "Focus and hover states trigger visual transitions",
+    "Dark theme overrides root variables via [data-theme='dark']"
+  ],
+  "accessibility": [
+    "Keyboard focus visible outlines on links and skip links",
+    ".visually-hidden for screen reader-only content",
+    ".skip-to-content for quick navigation to main content",
+    "Color contrast maintained via theme variables"
+  ],
+  "analytics": [
+    "Potential hooks for tracking theme toggles",
+    "Navbar interactions (menu clicks)",
+    "Banner visibility or dismiss actions",
+    "Hero section engagement metrics"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link appears on keyboard focus and navigates correctly",
+    "Validate responsive grid layouts at defined breakpoints",
+    "Check color and typography consistency between light and dark themes",
+    "Ensure focus outlines meet accessibility contrast requirements",
+    "Confirm navbar remains sticky and shadow transitions on scroll",
+    "Test hover and active states for links and buttons",
+    "Validate container max-width and padding adjustments across viewport sizes"
+  ]
+}

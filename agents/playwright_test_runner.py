@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import contextlib
+import logging
 import os
 import re
 import subprocess
@@ -19,6 +20,11 @@ from anthropic import AsyncAnthropicFoundry
 from dotenv import load_dotenv
 from pydantic import Field
 
+try:
+    from .agent_debug import log_agent_stream_metadata
+except ImportError:  # pragma: no cover - script execution fallback
+    from agent_debug import log_agent_stream_metadata  # type: ignore
+
 # Load environment configuration
 load_dotenv()
 
@@ -30,13 +36,14 @@ ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
 # Default location for the generated Playwright test plan
 DEFAULT_TEST_PLAN_PATH = Path("artifacts") / "playwright-test-plan.md"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ARTIFACTS_ROOT = PROJECT_ROOT / "artifacts"
-TEST_RESULTS_SUMMARY_FILENAME = "playwright-test-results-summary.txt"
 
 DEFAULT_SERVER_COMMAND = ["python", "-m", "http.server", "8000"]
 DEFAULT_SERVER_CWD = Path("artifacts") / "digital-experience-healthcare"
+DEFAULT_BASE_URL = "http://localhost:8000"
 SERVER_READY_TIMEOUT = 15
 SERVER_CHECK_INTERVAL = 0.5
+
+LOGGER = logging.getLogger("playwright_test_runner")
 
 
 def create_playwright_mcp_tool() -> MCPStdioTool:
@@ -58,12 +65,19 @@ def read_test_plan(plan_path: Path) -> str:
     return plan_path.read_text(encoding="utf-8").strip()
 
 
-def build_execution_prompt(plan_markdown: str) -> str:
+def build_execution_prompt(plan_markdown: str, base_url: str | None = None) -> str:
     """Create the prompt that instructs the agent how to execute the plan."""
+    url_directive = ""
+    if base_url:
+        url_directive = (
+            f"The application under test is served at {base_url}. Always load and reload this origin only; "
+            "do not probe alternative hosts or ports when scenarios require navigation or reset. "
+        )
     return (
         "You are a QA automation executor. You receive a Playwright test plan in Markdown. "
         "For each suite and scenario, translate the intent into concrete Playwright test steps. "
         "Use the Playwright MCP tool to run the necessary tests against the target application. "
+        f"{url_directive}"
         "Report consolidated pass/fail results, notable logs, and any follow-up actions.\n\n"
         "Playwright Test Plan:\n\n"
         f"{plan_markdown}"
@@ -312,14 +326,6 @@ def summarize_execution_output(output: str, plan_markdown: str | None = None) ->
     return summary + "\n"
 
 
-def write_summary_file(summary_text: str) -> Path:
-    """Persist the summary to the artifacts directory and return the path."""
-    ARTIFACTS_ROOT.mkdir(parents=True, exist_ok=True)
-    summary_path = ARTIFACTS_ROOT / TEST_RESULTS_SUMMARY_FILENAME
-    summary_path.write_text(summary_text, encoding="utf-8")
-    return summary_path
-
-
 async def run_playwright_test_agent(
     plan_path: Path,
     *,
@@ -327,6 +333,7 @@ async def run_playwright_test_agent(
     start_server: bool = True,
     server_command: Optional[list[str]] = None,
     server_cwd: Optional[Path] = None,
+    base_url: Optional[str] = DEFAULT_BASE_URL,
 ) -> Dict[str, Any]:
     """Execute the generated tests via the Playwright MCP server."""
     required_env = {
@@ -341,7 +348,7 @@ async def run_playwright_test_agent(
         )
 
     plan_markdown = read_test_plan(plan_path)
-    prompt = build_execution_prompt(plan_markdown)
+    prompt = build_execution_prompt(plan_markdown, base_url)
 
     server_process: Optional[subprocess.Popen[str]] = None
     if start_server:
@@ -363,6 +370,11 @@ async def run_playwright_test_agent(
         "parse the scenarios, call the Playwright MCP tool to execute the relevant tests, "
         "and provide a detailed but concise report of execution results."
     )
+    if base_url:
+        instructions += (
+            f" The application is hosted at {base_url}; stay on this origin for all navigation, "
+            "state resets, and reloads."
+        )
 
     transcript = []
 
@@ -373,34 +385,38 @@ async def run_playwright_test_agent(
         "allow_multiple_tool_calls": True,
     }
 
-    try:
-        context_manager = client.create_agent(max_output_tokens=16000, **agent_kwargs)
-    except TypeError:
-        context_manager = client.create_agent(**agent_kwargs)
+    context_manager = client.create_agent(max_output_tokens=32000, **agent_kwargs)
+
+    # try:
+    #     context_manager = client.create_agent(max_output_tokens=16000, **agent_kwargs)
+    # except TypeError:
+    #     context_manager = client.create_agent(**agent_kwargs)
 
     try:
         async with context_manager as agent:
             thread = agent.get_new_thread()
             if echo:
                 print("Agent: ", end="", flush=True)
+            response_updates = []
             async for chunk in agent.run_stream(prompt, thread=thread):
+                response_updates.append(chunk)
                 if chunk.text:
                     transcript.append(chunk.text)
                     if echo:
                         print(chunk.text, end="", flush=True)
             if echo:
                 print()
+            log_agent_stream_metadata(
+                "PlaywrightRunnerAgent",
+                response_updates,
+                logger=LOGGER,
+            )
     finally:
         if start_server and server_process is not None:
             stop_local_server(server_process)
 
     output_text = "".join(transcript).strip()
     summary_text = summarize_execution_output(output_text, plan_markdown)
-    summary_path = write_summary_file(summary_text)
-    try:
-        relative_summary = summary_path.relative_to(PROJECT_ROOT).as_posix()
-    except ValueError:
-        relative_summary = summary_path.as_posix()
 
     try:
         relative_plan = plan_path.relative_to(PROJECT_ROOT)
@@ -413,7 +429,6 @@ async def run_playwright_test_agent(
         "output": output_text,
         "output_preview": output_text[:1000],
         "summary_text": summary_text,
-        "summary_file": relative_summary,
     }
 
 
@@ -424,15 +439,19 @@ async def run_playwright_test_agent(
 async def run_playwright_tests_tool(
     plan_path: Annotated[Optional[str], Field(description="Path to the Playwright test plan markdown file.")] = None,
     start_host: Annotated[bool, Field(description="Whether to start the local development server before running tests.")] = True,
+    base_url: Annotated[Optional[str], Field(description="Explicit base URL for the application under test.")] = None,
 ) -> Dict[str, Any]:
     resolved_path = Path(plan_path) if plan_path else DEFAULT_TEST_PLAN_PATH
     if not resolved_path.is_absolute():
         resolved_path = (PROJECT_ROOT / resolved_path).resolve()
 
+    resolved_base_url = base_url or DEFAULT_BASE_URL
+
     result = await run_playwright_test_agent(
         resolved_path,
         echo=False,
         start_server=start_host,
+        base_url=resolved_base_url,
     )
     return result
 
@@ -452,6 +471,12 @@ def main() -> None:
         action="store_true",
         help="Do not start the local HTTP server before executing tests.",
     )
+    parser.add_argument(
+        "--base-url",
+        type=str,
+        default=DEFAULT_BASE_URL,
+        help="Base URL for the application under test (default: http://localhost:8000)",
+    )
     args = parser.parse_args()
 
     result = asyncio.run(
@@ -459,13 +484,11 @@ def main() -> None:
             args.plan,
             echo=True,
             start_server=not args.skip_server,
+            base_url=args.base_url,
         )
     )
     if not result["output"]:
         print("No output captured from PlaywrightRunnerAgent.")
-    summary_file = result.get("summary_file")
-    if summary_file:
-        print(f"Summary saved to {summary_file}")
 
 
 if __name__ == "__main__":

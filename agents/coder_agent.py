@@ -12,6 +12,11 @@ from anthropic import AsyncAnthropicFoundry
 from dotenv import load_dotenv
 from pydantic import Field
 
+try:
+    from .agent_debug import log_agent_response_metadata
+except ImportError:  # pragma: no cover - allows script execution via python agents/coder_agent.py
+    from agent_debug import log_agent_response_metadata  # type: ignore
+
 load_dotenv()
 
 AGENT_CONFIG: Dict[str, object] = {
@@ -24,7 +29,7 @@ AGENT_CONFIG: Dict[str, object] = {
         "api_key": os.getenv("ANTHROPIC_FOUNDRY_API_KEY", ""),
         "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview"),
         "temperature": 0.15,
-        "max_output_tokens": 1500,
+        "max_output_tokens": 15000,
     },
 }
 
@@ -243,6 +248,13 @@ async def invoke_llm_chat(
     except Exception as exc:  # pragma: no cover - network errors
         LOGGER.error("LLM call failed: %s", exc)
         return None
+
+    log_agent_response_metadata(
+        "CoderAgent",
+        response,
+        logger=LOGGER,
+        include_message_count=True,
+    )
 
     return extract_text_from_response(response)
 
@@ -548,7 +560,7 @@ async def generate_stylesheet(
     llm_cfg = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
     boosted_cfg = {
         **config,
-        "llm": {**llm_cfg, "max_output_tokens": max(int(llm_cfg.get("max_output_tokens", 1500)) * 2, 3000)},
+        "llm": {**llm_cfg, "max_output_tokens": max(int(llm_cfg.get("max_output_tokens", 1500)) * 2, 10000)},
     }
 
     parts: List[str] = []

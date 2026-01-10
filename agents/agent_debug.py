@@ -1,0 +1,123 @@
+"""Utilities for inspecting Agent Framework responses.
+
+These helpers centralize response metadata logging so that individual agents can
+opt into richer diagnostics without duplicating serialization logic.
+Set the environment variable ``AGENT_FRAMEWORK_DEBUG_METADATA`` to ``1`` (or
+``true``/``yes``/``on``) to enable logging.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+from typing import Any, Iterable, Sequence
+
+from agent_framework import AgentRunResponse, AgentRunResponseUpdate
+
+_DEBUG_ENV_VALUES = {"1", "true", "yes", "on"}
+
+
+def _debug_metadata_enabled() -> bool:
+    value = os.getenv("AGENT_FRAMEWORK_DEBUG_METADATA", "")
+    return value.strip().lower() in _DEBUG_ENV_VALUES
+
+
+def _stringify(value: Any) -> Any:
+    """Best-effort conversion of complex objects into JSON-friendly data."""
+    if value is None:
+        return None
+    if hasattr(value, "to_dict") and callable(value.to_dict):
+        try:
+            return value.to_dict(exclude=None, exclude_none=True)  # type: ignore[arg-type]
+        except TypeError:
+            return value.to_dict()  # type: ignore[call-arg]
+        except Exception:  # pragma: no cover - defensive
+            return repr(value)
+    if hasattr(value, "value"):
+        candidate = getattr(value, "value")
+        if candidate is not None:
+            return candidate
+    if isinstance(value, (list, tuple, set)):
+        return [_stringify(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _stringify(val) for key, val in value.items() if val is not None}
+    return value
+
+
+def log_agent_response_metadata(
+    agent_label: str,
+    response: Any,
+    *,
+    logger: logging.Logger,
+    include_message_count: bool = False,
+    force: bool = False,
+) -> None:
+    """Log metadata for a non-streaming agent response if diagnostics are enabled."""
+    if not (force or _debug_metadata_enabled()):
+        return
+
+    if response is None:
+        logger.info("[%s] Agent response is None; no metadata available.", agent_label)
+        return
+
+    metadata: dict[str, Any] = {}
+
+    for attr in ("response_id", "conversation_id", "model_id", "created_at", "finish_reason"):
+        if hasattr(response, attr):
+            value = getattr(response, attr)
+            if value is not None:
+                metadata[attr] = _stringify(value)
+
+    usage = getattr(response, "usage_details", None)
+    if usage is not None:
+        usage_dict = _stringify(usage)
+        if usage_dict:
+            metadata["usage"] = usage_dict
+
+    additional = getattr(response, "additional_properties", None)
+    if additional:
+        metadata["additional_properties"] = _stringify(additional)
+
+    if include_message_count and hasattr(response, "messages"):
+        messages = getattr(response, "messages")
+        try:
+            metadata["message_count"] = len(messages)
+        except Exception:  # pragma: no cover - defensive
+            metadata["message_count"] = "unknown"
+
+    if not metadata and hasattr(response, "to_dict") and callable(response.to_dict):
+        try:
+            metadata = response.to_dict(exclude={"messages", "contents"}, exclude_none=True)  # type: ignore[arg-type]
+        except Exception:  # pragma: no cover - defensive
+            metadata = {"repr": repr(response)}
+
+    logger.info("[%s] Agent response metadata: %s", agent_label, json.dumps(metadata, default=str))
+
+
+def log_agent_stream_metadata(
+    agent_label: str,
+    updates: Sequence[AgentRunResponseUpdate] | Iterable[AgentRunResponseUpdate] | None,
+    *,
+    logger: logging.Logger,
+    force: bool = False,
+) -> None:
+    """Summarize streaming updates by converting them into a full response."""
+    if not (force or _debug_metadata_enabled()):
+        return
+
+    if not updates:
+        logger.info("[%s] No streaming updates captured; skipping metadata log.", agent_label)
+        return
+
+    try:
+        response = AgentRunResponse.from_agent_run_response_updates(list(updates))
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.info(
+            "[%s] Unable to materialize streaming updates for metadata logging: %s",
+            agent_label,
+            exc,
+        )
+        return
+
+    log_agent_response_metadata(agent_label, response, logger=logger)

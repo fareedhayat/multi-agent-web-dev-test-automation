@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict
@@ -9,6 +10,11 @@ from typing import Any, Dict
 from agent_framework import ai_function
 from agent_framework.azure import AzureOpenAIAssistantsClient
 from dotenv import load_dotenv
+
+try:
+    from .agent_debug import log_agent_stream_metadata
+except ImportError:  # pragma: no cover - script execution fallback
+    from agent_debug import log_agent_stream_metadata  # type: ignore
 
 try:
     from .test_writer_helpers import (
@@ -45,6 +51,8 @@ except ImportError:  # Allow running as a stand-alone script
     )
 
 load_dotenv()
+
+LOGGER = logging.getLogger("playwright_test_writer")
 
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
@@ -245,10 +253,17 @@ async def main() -> None:
                 break
 
             print("Agent: ", end="", flush=True)
+            response_updates = []
             async for chunk in agent.run_stream(user_input, thread=thread):
+                response_updates.append(chunk)
                 if chunk.text:
                     print(chunk.text, end="", flush=True)
             print()
+            log_agent_stream_metadata(
+                "PlaywrightTestWriterAgent",
+                response_updates,
+                logger=LOGGER,
+            )
 
 
 async def run_auto_workflow() -> None:

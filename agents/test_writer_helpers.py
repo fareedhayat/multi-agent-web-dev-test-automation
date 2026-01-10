@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -9,6 +10,11 @@ from agent_framework import ChatMessage
 from agent_framework.anthropic import AnthropicClient
 from agent_framework.azure import AzureOpenAIAssistantsClient
 from anthropic import AsyncAnthropicFoundry
+
+try:
+    from .agent_debug import log_agent_response_metadata
+except ImportError:  # pragma: no cover - script execution fallback
+    from agent_debug import log_agent_response_metadata  # type: ignore
 
 SUMMARY_FILENAME = "requirements-summary.txt"
 TEST_PLAN_FILENAME = "playwright-test-plan.md"
@@ -78,6 +84,8 @@ PLAN_MAX_REQUIREMENTS_CHARS = 2000
 PLAN_MAX_FILES = 25
 PLAN_MAX_ITEMS_PER_SECTION = 6
 PLAN_OVERVIEW_MAX_CHARS = 200
+
+LOGGER = logging.getLogger("playwright_test_writer")
 
 
 def sanitize_ascii(value: str, *, preserve_newlines: bool = False) -> str:
@@ -319,6 +327,13 @@ async def summarize_requirements_with_llm(
             max_tokens=900,
         )
 
+    log_agent_response_metadata(
+        "RequirementsSummary",
+        response,
+        logger=LOGGER,
+        include_message_count=True,
+    )
+
     raw_text = extract_text_from_response(response)
     if not raw_text:
         raise ValueError("Summarization model returned an empty response.")
@@ -471,6 +486,12 @@ async def summarize_code_files(
                 max_tokens=1100,
             )
 
+            log_agent_response_metadata(
+                f"CodeSummary:{file_meta['relative_path']}",
+                response,
+                logger=LOGGER,
+            )
+
             raw_text = extract_text_from_response(response)
             if not raw_text:
                 raise ValueError(
@@ -548,6 +569,7 @@ async def generate_test_plan_with_anthropic(
     ]
 
     response = await client.get_response(messages, temperature=0.2, max_tokens=3200)
+    log_agent_response_metadata("TestPlan", response, logger=LOGGER)
     raw_text = extract_text_from_response(response)
 
     if not raw_text:
@@ -561,6 +583,7 @@ async def generate_test_plan_with_anthropic(
             )
         ]
         response = await client.get_response(retry_messages, temperature=0.2, max_tokens=3200)
+        log_agent_response_metadata("TestPlanRetry", response, logger=LOGGER)
         raw_text = extract_text_from_response(response)
 
     if not raw_text:

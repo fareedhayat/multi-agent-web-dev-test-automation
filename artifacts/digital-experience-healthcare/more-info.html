@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore our comprehensive healthcare services, insurance options, and locations. Search, filter, and find the care you need with Digital Experience Healthcare.">
+  <title>More Information | Digital Experience Healthcare</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-to-content" data-testid="skip-to-content">Skip to content</a>
+
+  <!-- Sticky Navigation Bar -->
+  <nav class="navbar" data-testid="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <a href="./index.html" aria-label="Digital Experience Healthcare Home">
+          <span class="brand-icon" aria-hidden="true">🏥</span>
+          <span class="brand-name">Digital Experience</span>
+        </a>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="./index.html" data-testid="nav-link-home">Home</a></li>
+        <li><a href="./more-info.html" class="active" data-testid="nav-link-more-info" aria-current="page">More Information</a></li>
+        <li><a href="./contact.html" data-testid="nav-link-contact">Contact Us</a></li>
+      </ul>
+      <button 
+        type="button" 
+        class="theme-toggle" 
+        data-testid="theme-toggle" 
+        aria-label="Toggle dark mode"
+        aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main-content" data-testid="main-content">
+    <!-- Page Header -->
+    <section class="page-header">
+      <div class="container">
+        <h1>More Information</h1>
+        <p class="page-subtitle">Discover our services, insurance options, and locations. Use the search and filters below to find exactly what you need.</p>
+      </div>
+    </section>
+
+    <!-- Search and Filter Controls -->
+    <section class="controls-section" aria-label="Search and filter controls">
+      <div class="container">
+        <div class="search-wrapper">
+          <label for="search-input" class="visually-hidden">Search services</label>
+          <input 
+            type="search" 
+            id="search-input" 
+            class="search-input" 
+            data-testid="search-input"
+            placeholder="Search services by name or description..."
+            aria-label="Search services"
+            autocomplete="off">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+        </div>
+
+        <div class="filter-sort-wrapper">
+          <div class="filter-chips" role="group" aria-label="Filter by category">
+            <span class="filter-label">Filter:</span>
+            <button 
+              type="button" 
+              class="filter-chip" 
+              data-testid="filter-chip" 
+              data-filter="primary-care"
+              aria-pressed="false">
+              Primary Care
+            </button>
+            <button 
+              type="button" 
+              class="filter-chip" 
+              data-testid="filter-chip" 
+              data-filter="pediatrics"
+              aria-pressed="false">
+              Pediatrics
+            </button>
+            <button 
+              type="button" 
+              class="filter-chip" 
+              data-testid="filter-chip" 
+              data-filter="dental"
+              aria-pressed="false">
+              Dental
+            </button>
+            <button 
+              type="button" 
+              class="filter-chip" 
+              data-testid="filter-chip" 
+              data-filter="cardiology"
+              aria-pressed="false">
+              Cardiology
+            </button>
+            <button 
+              type="button" 
+              class="filter-chip" 
+              data-testid="filter-chip" 
+              data-filter="orthopedics"
+              aria-pressed="false">
+              Orthopedics
+            </button>
+          </div>
+
+          <div class="sort-wrapper">
+            <label for="sort-dropdown" class="sort-label">Sort by:</label>
+            <select 
+              id="sort-dropdown" 
+              class="sort-dropdown" 
+              data-testid="sort-dropdown"
+              aria-label="Sort services">
+              <option value="alphabetical">Alphabetical</option>
+              <option value="popularity">Popularity</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Service Cards Grid -->
+    <section class="services-section" aria-label="Healthcare services">
+      <div class="container">
+        <div class="services-grid" id="services-grid">
+          <!-- Skeleton Loaders (will be replaced by actual cards) -->
+          <div class="service-card skeleton-loader" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text skeleton-title"></div>
+            <div class="skeleton-text skeleton-description"></div>
+            <div class="skeleton-text skeleton-description short"></div>
+          </div>
+          <div class="service-card skeleton-loader" data-testid="skeleton-

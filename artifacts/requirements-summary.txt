@@ -1,0 +1,61 @@
+Interactive Healthcare Website
+
+Pages & Navigation:
+- Home page with hero section, intro, and CTA buttons linking to other pages.
+- More Information page with services overview and interactive elements.
+- Contact Us page with a form and client-side validation.
+- Sticky navigation bar highlights active page and includes a back-to-top button.
+- Back-to-top button appears after scrolling.
+
+Contact Us Form:
+- Fields: Full Name (required), Email (required, valid format), Phone (optional, auto-format), Message (required, 20-1000 chars).
+- Real-time validation with inline messages; disable Submit until valid.
+- On submit, show loading spinner and simulate success/failure (800-1500ms).
+- Success: clear form, focus first field, show dismissible banner, log analytics.
+- Failure: keep inputs, focus first invalid field, show error banner.
+- Accessibility: labels, aria-invalid, keyboard navigation, clear focus styles.
+
+More Information Page:
+- Search input filters service cards by title/description (debounced ~250ms).
+- Tag chips for multi-select filters (e.g., Primary Care, Pediatrics).
+- Sort dropdown for Alphabetical or Popularity (mock data attribute).
+- FAQ accordion: expand/collapse answers; one open at a time; persist state in localStorage.
+- Tabbed content: switch between Services, Insurance, and Locations with transitions.
+- Optional map embed: clicking location highlights corresponding map marker.
+
+Shared UI/Interactions:
+- Theme toggle: light/dark mode persisted in localStorage.
+- Reusable toast notifications for success/error/info; auto-dismiss with manual close.
+- Smooth scrolling for in-page anchors; respect prefers-reduced-motion.
+- Lazy-load images with loading='lazy'; skeleton loaders for cards until ready.
+
+Accessibility & Performance:
+- WCAG 2.1 AA: color contrast, focus order, skip-to-content link, ARIA roles.
+- Keyboard-first experience: all interactive elements operable by keyboard.
+- Performance: debounce search, minimize reflow, avoid heavy libraries.
+- Test on mobile-first responsive layout (320px to desktop).
+
+Non-Functional Requirements:
+- SEO basics: meaningful titles, meta description, favicon, structured headings.
+- Placeholder content clearly marked; no real personal data stored or sent.
+- Test on latest Chrome, Edge, Firefox, and Safari.
+
+Analytics:
+- Log events to window.analyticsLog with { type, timestamp, payload }.
+- Track actions: form_submit_success, form_submit_error, search, filter_change, theme_toggle.
+- Hidden debug panel toggled via keyboard (e.g., Ctrl+Shift+D) to view recent events.
+
+Acceptance Tests (Playwright):
+- Navbar is sticky, highlights active page, and back-to-top appears after scroll.
+- Theme toggle persists across refresh and respects reduced motion.
+- Contact form: validation messages appear; submit disabled when invalid.
+- Contact form: success shows toast/banner and clears inputs; failure preserves inputs and focuses first invalid field.
+- More Info: search filters cards; filters and sort work together.
+- More Info: accordion opens/closes and persists state; tabs switch views.
+- Skeleton loaders are replaced when content is ready.
+- Tab cycles through interactive elements logically; ARIA attributes on accordion and tabs.
+
+Success Criteria:
+- All acceptance tests pass.
+- No console errors in latest browsers.
+- Lighthouse performance and accessibility scores ≥ 90 on desktop.
