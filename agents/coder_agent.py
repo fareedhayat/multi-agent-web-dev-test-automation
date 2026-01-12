@@ -29,7 +29,7 @@ AGENT_CONFIG: Dict[str, object] = {
         "api_key": os.getenv("ANTHROPIC_FOUNDRY_API_KEY", ""),
         "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview"),
         "temperature": 0.15,
-        "max_output_tokens": 15000,
+        "max_output_tokens": 10000,
     },
 }
 

@@ -1,0 +1,82 @@
+{
+  "file_path": "digital-experience-healthcare/main.js",
+  "language": "JavaScript",
+  "overview": "This JavaScript file initializes interactive behaviors for a healthcare website, including theme toggling, back-to-top visibility, skip-to-content accessibility, CTA tracking, search/filter/sort of service cards, FAQ accordion persistence, and tabbed content management. It also logs analytics events for user interactions.",
+  "key_components": [
+    "Theme toggle system",
+    "Back-to-top button",
+    "Skip-to-content link",
+    "CTA links (services, contact)",
+    "Search input with debounce",
+    "Filter chips and sort dropdown",
+    "Service cards filtering/sorting",
+    "FAQ accordion with localStorage persistence",
+    "Tabbed content interface"
+  ],
+  "interactions": [
+    "Click theme toggle to switch between light/dark modes",
+    "Scroll to trigger back-to-top visibility",
+    "Click back-to-top to smooth scroll to top",
+    "Click skip-to-content to focus main content",
+    "Click CTA links to log analytics events",
+    "Type in search input to filter cards",
+    "Click filter chips to toggle active state and filter cards",
+    "Change sort dropdown to reorder visible cards",
+    "Click FAQ buttons to expand/collapse panels and persist state",
+    "Click tab buttons to switch visible panels"
+  ],
+  "routes": [
+    "/ (main landing page)",
+    "/services (CTA target)",
+    "/contact (CTA target)"
+  ],
+  "selectors": [
+    "[data-testid='theme-toggle']",
+    "[data-testid='back-to-top']",
+    "[data-testid='skip-to-content']",
+    "[data-testid='cta-services']",
+    "[data-testid='cta-contact']",
+    "[data-testid='search-input']",
+    "[data-testid^='filter-chip-']",
+    "[data-testid='sort-dropdown']",
+    "[data-testid='service-card']",
+    "[data-testid='faq-item']",
+    "[data-testid='faq-button']",
+    "[data-testid='faq-panel']",
+    "[data-testid^='tab-']",
+    "[data-testid^='tab-panel-']"
+  ],
+  "data_flow": [
+    "User actions trigger DOM updates and analytics logging via logEvent()",
+    "Theme preference stored in localStorage under 'theme'",
+    "FAQ open state stored in localStorage under 'faq-open-index'",
+    "Search/filter/sort functions manipulate DOM visibility and order of service cards",
+    "Analytics events appended to window.analyticsLog array"
+  ],
+  "accessibility": [
+    "ARIA attributes for theme toggle, back-to-top visibility, and FAQ accordion",
+    "Skip-to-content link focuses main content with temporary tabindex",
+    "Filter chips use aria-pressed to indicate active state",
+    "Tabs use aria-selected, aria-hidden, and tabindex for keyboard navigation",
+    "FAQ panels use aria-controls and aria-expanded for screen reader support"
+  ],
+  "analytics": [
+    "logEvent('theme_toggle', { theme })",
+    "logEvent('cta_click', { target })",
+    "logEvent('search', { query })",
+    "logEvent('filter_change', { tag })",
+    "logEvent('sort_change', { value })"
+  ],
+  "test_ideas": [
+    "Verify theme toggle updates DOM attribute and localStorage value",
+    "Ensure back-to-top button visibility toggles after scrolling threshold",
+    "Confirm skip-to-content focuses main element and restores tabindex",
+    "Validate CTA clicks log correct analytics events",
+    "Test search input filters cards by title/description text",
+    "Check filter chips toggle active state and aria-pressed correctly",
+    "Verify sort dropdown reorders visible cards alphabetically or by popularity",
+    "Ensure FAQ accordion expands one item at a time and persists state after reload",
+    "Confirm tab navigation updates aria attributes and visible panel",
+    "Validate analyticsLog entries contain correct event types and payloads"
+  ]
+}

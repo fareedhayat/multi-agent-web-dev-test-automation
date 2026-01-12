@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore our comprehensive healthcare services, insurance options, and locations. Search, filter, and find the care you need with Digital Experience Healthcare.">
+  <title>More Information | Digital Experience Healthcare</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-to-content" data-testid="skip-to-content">Skip to content</a>
+
+  <!-- Sticky Navigation -->
+  <nav class="navbar" data-testid="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-container">
+      <a href="./index.html" class="navbar-brand">
+        <span class="brand-icon" aria-hidden="true">🏥</span>
+        <span class="brand-name">Digital Experience</span>
+      </a>
+      <ul class="navbar-menu">
+        <li><a href="./index.html" class="navbar-link">Home</a></li>
+        <li><a href="./more-information.html" class="navbar-link active" aria-current="page">More Information</a></li>
+        <li><a href="./contact.html" class="navbar-link">Contact Us</a></li>
+      </ul>
+      <button type="button" class="theme-toggle" data-testid="theme-toggle" aria-label="Toggle dark mode">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main-content" data-testid="main-content">
+    <!-- Page Header -->
+    <section class="page-header">
+      <div class="container">
+        <h1>More Information</h1>
+        <p class="page-subtitle">Discover our services, insurance options, and locations. Use the search and filters below to find exactly what you need.</p>
+      </div>
+    </section>
+
+    <!-- Search and Filter Section -->
+    <section class="search-filter-section">
+      <div class="container">
+        <div class="search-bar">
+          <label for="search-input" class="visually-hidden">Search services</label>
+          <input 
+            type="search" 
+            id="search-input" 
+            data-testid="search-input"
+            class="search-input" 
+            placeholder="Search services by name or description..."
+            aria-label="Search services"
+            autocomplete="off"
+          >
+          <span class="search-icon" aria-hidden="true">🔍</span>
+        </div>
+
+        <div class="filter-sort-container">
+          <div class="filter-chips" role="group" aria-label="Filter by category">
+            <span class="filter-label">Filter:</span>
+            <button type="button" class="filter-chip" data-testid="filter-chip-primary-care" data-filter="primary-care">
+              Primary Care
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip-pediatrics" data-filter="pediatrics">
+              Pediatrics
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip-dental" data-filter="dental">
+              Dental
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip-cardiology" data-filter="cardiology">
+              Cardiology
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip-orthopedics" data-filter="orthopedics">
+              Orthopedics
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip-mental-health" data-filter="mental-health">
+              Mental Health
+            </button>
+          </div>
+
+          <div class="sort-container">
+            <label for="sort-dropdown" class="sort-label">Sort by:</label>
+            <select id="sort-dropdown" data-testid="sort-dropdown" class="sort-dropdown">
+              <option value="alphabetical">Alphabetical</option>
+              <option value="popularity">Popularity</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Service Cards Section -->
+    <section class="services-section">
+      <div class="container">
+        <h2 class="section-title">Our Services</h2>
+        <div class="service-cards-grid" id="service-cards-container">
+          <!-- Skeleton loaders shown initially -->
+          <div class="service-card skeleton-loader" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+          <div class="service-card skeleton-loader" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+          <div class="service-card skeleton-loader" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+          
+          <!-- Actual service cards (hidden initially, revealed by JS) -->
+          <article class="service-card" data-testid="service-card" data-tags="primary-care" data-popularity="95" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e3f2fd' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EPrimary Care%3C/text%3E%3C/svg%3E" alt="Primary Care Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Primary Care</h3>
+              <p class="service-description">Comprehensive primary care services for adults and families. Annual checkups, preventive care, and chronic disease management.</p>
+              <div class="service-tags">
+                <span class="tag">Primary Care</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="pediatrics" data-popularity="92" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23fff3e0' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EPediatrics%3C/text%3E%3C/svg%3E" alt="Pediatric Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Pediatrics</h3>
+              <p class="service-description">Specialized care for infants, children, and adolescents. Well-child visits, immunizations, and developmental screenings.</p>
+              <div class="service-tags">
+                <span class="tag">Pediatrics</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="dental" data-popularity="88" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23f3e5f5' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EDental Care%3C/text%3E%3C/svg%3E" alt="Dental Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Dental Care</h3>
+              <p class="service-description">Complete dental services including cleanings, fillings, crowns, and cosmetic dentistry. Accepting new patients.</p>
+              <div class="service-tags">
+                <span class="tag">Dental</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="cardiology" data-popularity="85" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23ffebee' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3ECardiology%3C/text%3E%3C/svg%3E" alt="Cardiology Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Cardiology</h3>
+              <p class="service-description">Expert heart care including diagnostics, treatment, and prevention. EKG, stress tests, and cardiac rehabilitation available.</p>
+              <div class="service-tags">
+                <span class="tag">Cardiology</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="orthopedics" data-popularity="80" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e8f5e9' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EOrthopedics%3C/text%3E%3C/svg%3E" alt="Orthopedic Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Orthopedics</h3>
+              <p class="service-description">Musculoskeletal care for bones, joints, ligaments, and tendons. Sports medicine, joint replacement, and physical therapy.</p>
+              <div class="service-tags">
+                <span class="tag">Orthopedics</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="mental-health" data-popularity="90" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e1f5fe' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EMental Health%3C/text%3E%3C/svg%3E" alt="Mental Health Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Mental Health</h3>
+              <p class="service-description">Compassionate mental health services including counseling, therapy, and psychiatric care. Telehealth options available.</p>
+              <div class="service-tags">
+                <span class="tag">Mental Health</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="primary-care,dental" data-popularity="78" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23fce4ec' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EPreventive Care%3C/text%3E%3C/svg%3E" alt="Preventive Care Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Preventive Care</h3>
+              <p class="service-description">Stay healthy with our preventive care programs. Health screenings, vaccinations, and wellness education for all ages.</p>
+              <div class="service-tags">
+                <span class="tag">Primary Care</span>
+                <span class="tag">Dental</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="service-card" data-testid="service-card" data-tags="cardiology,primary-care" data-popularity="82" style="display: none;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23fff9c4' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23666'%3EWomen%27s Health%3C/text%3E%3C/svg%3E" alt="Women's Health Services" class="service-image" loading="lazy">
+            <div class="service-content">
+              <h3 class="service-title">Women's Health</h3>
+              <p class="service-description">Comprehensive women's healthcare including gynecology, prenatal care, and menopause management. Female providers available.</p>
+              <div class="service-tags">
+                <span class="tag">Primary Care</span>
+                <span class="tag">Cardiology</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="no-results" id="no-results" style="display: none;">
+          <p>No services found matching your criteria. Try adjusting your search or filters.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Accordion Section -->
+    <section class="faq-section">
+      <div class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-accordion">
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-1"
+                id="faq-button-1"
+              >
+                <span class="faq-question">What insurance plans do you accept?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              id="faq-panel-1"
+              role="region"
+              aria-labelledby="faq-button-1"
+              hidden
+            >
+              <p>We accept most major insurance plans including Blue Cross Blue Shield, Aetna, Cigna, UnitedHealthcare, Medicare, and Medicaid. Please check the Insurance tab below for a complete list or contact our billing department to verify your specific plan.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-2"
+                id="faq-button-2"
+              >
+                <span class="faq-question">How do I schedule an appointment?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              id="faq-panel-2"
+              role="region"
+              aria-labelledby="faq-button-2"
+              hidden
+            >
+              <p>You can schedule an appointment by calling our main line at (555) 123-4567, using our online patient portal, or visiting the Contact Us page to submit a request. We offer same-day appointments for urgent needs and telehealth options for many services.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-3"
+                id="faq-button-3"
+              >
+                <span class="faq-question">Do you offer telehealth services?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              id="faq-panel-3"
+              role="region"
+              aria-labelledby="faq-button-3"
+              hidden
+            >
+              <p>Yes! We offer secure telehealth appointments for many services including primary care consultations, mental health counseling, follow-up visits, and prescription refills. Telehealth visits are available via video or phone and are covered by most insurance plans.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-4"
+                id="faq-button-4"
+              >
+                <span class="faq-question">What should I bring to my first appointment?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              id="faq-panel-4"
+              role="region"
+              aria-labelledby="faq-button-4"
+              hidden
+            >
+              <p>Please bring a valid photo ID, your insurance card, a list of current medications, and any relevant medical records from previous providers. Arrive 15 minutes early to complete registration paperwork, or fill out forms online through our patient portal before your visit.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-5"
+                id="faq-button-5"
+              >
+                <span class="faq-question">Are walk-ins accepted?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              id="faq-panel-5"
+              role="region"
+              aria-labelledby="faq-button-5"
+              hidden
+            >
+              <p>Walk-ins are welcome at our urgent care locations during business hours. For specialty services and primary care, we recommend scheduling an appointment to minimize wait times. Our urgent care centers are open 7 days a week from 8 AM to 8 PM.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabbed Content Section -->
+    <section class="tabbed-section">
+      <div class="container">
+        <h2 class="section-title">Additional Information</h2>
+        <div class="tabs-container">
+          <div class="tabs" role="tablist" aria-label="Additional information">
+            <button 
+              type="button" 
+              class="tab active" 
+              data-testid="tab-services"
+              role="tab"
+              aria-selected="true"
+              aria-controls="tab-panel-services"
+              id="tab-services"
+            >
+              Services
+            </button>
+            <button 
+              type="button" 
+              class="tab" 
+              data-testid="tab-insurance"
+              role="tab"
+              aria-selected="false"
+              aria-controls="tab-panel-insurance"
+              id="tab-insurance"
+              tabindex="-1"
+            >
+              Insurance
+            </button>
+            <button 
+              type="button" 
+              class="tab" 
+              data-testid="tab-locations"
+              role="tab"
+              aria-selected="false"
+              aria-controls="tab-panel-locations"
+              id="tab-locations"
+              tabindex="-1"
+            >
+              Locations
+            </button>
+          </div>
+
+          <div class="tab-panels">
+            <div 
+              class="tab-panel active" 
+              data-testid="tab-panel-services"
+              id="tab-panel-services"
+              role="tabpanel"
+              aria-labelledby="tab-services"
+            >
+              <h3>Our Comprehensive Services</h3>
+              <p>Digital Experience Healthcare provides a full spectrum of medical services designed to meet the needs of our diverse community. Our team of board-certified physicians, specialists, and healthcare professionals are committed to delivering personalized, compassionate care.</p>
+              
+              <div class="service-highlights">
+                <div class="highlight-card">
+                  <span class="highlight-icon" aria-hidden="true">🩺</span>
+                  <h4>Primary & Preventive Care</h4>
+                  <p>Annual physicals, wellness exams, chronic disease management, and health screenings.</p>
+                </div>
+                <div class="highlight-card">
+                  <span class="highlight-icon" aria-hidden="true">👨‍⚕️</span>
+                  <h4>Specialty Services</h4>
+                  <p>Cardiology, orthopedics, pediatrics, mental health, and more with expert specialists.</p>
+                </div>
+                <div class="highlight-card">
+                  <span class="highlight-icon" aria-hidden="true">🏥</span>
+                  <h4>Urgent Care</h4>
+                  <p>Walk-in care for non-life-threatening conditions, open 7 days a week.</p>
+                </div>
+                <div class="highlight-card">
+                  <span class="highlight-icon" aria-hidden="true">💻</span>
+                  <h4>Telehealth</h4>
+                  <p>Virtual visits from the comfort of your home for many services.</p>
+                </div>
+              </div>
+            </div>
+
+            <div 
+              class="tab-panel" 
+              data-testid="tab-panel-insurance"
+              id="tab-panel-insurance"
+              role="tabpanel"
+              aria-labelledby="tab-insurance"
+              hidden
+            >
+              <h3>Accepted Insurance Plans</h3>
+              <p>We work with most major insurance providers to ensure you receive the care you need. Below is a list of insurance plans we currently accept. If you don't see your plan listed, please contact our billing department at (555) 123-4567 ext. 2 for verification.</p>
+              
+              <div class="insurance-grid">
+                <div class="insurance-category">
+                  <h4>Major Carriers</h4>
+                  <ul>
+                    <li>Blue Cross Blue Shield (all plans)</li>
+                    <li>Aetna</li>
+                    <li>Cigna</li>
+                    <li>UnitedHealthcare</li>
+                    <li>Humana</li>
+                    <li>Anthem</li>
+                  </ul>
+                </div>
+                <div class="insurance-category">
+                  <h4>Government Programs</h4>
+                  <ul>
+                    <li>Medicare (Parts A, B, C, D)</li>
+                    <li>Medicaid</li>
+                    <li>TRICARE</li>
+                    <li>Veterans Affairs (VA)</li>
+                  </ul>
+                </div>
+                <div class="insurance-category">
+                  <h4>Regional Plans</h4>
+                  <ul>
+                    <li>Kaiser Permanente</li>
+                    <li>Health Net</li>
+                    <li>Molina Healthcare</li>
+                    <li>Centene</li>
+                    <li>WellCare</li>
+                  </ul>
+                </div>
+                <div class="insurance-category">
+                  <h4>Other Options</h4>
+                  <ul>
+                    <li>Self-pay (discounts available)</li>
+                    <li>Payment plans</li>
+                    <li>Health Savings Accounts (HSA)</li>
+                    <li>Flexible Spending Accounts (FSA)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <p class="insurance-note"><strong>Note:</strong> Coverage and benefits vary by plan. Please verify your specific coverage with your insurance provider before your visit.</p>
+            </div>
+
+            <div 
+              class="tab-panel" 
+              data-testid="tab-panel-locations"
+              id="tab-panel-locations"
+              role="tabpanel"
+              aria-labelledby="tab-locations"
+              hidden
+            >
+              <h3>Our Locations</h3>
+              <p>Digital Experience Healthcare operates multiple facilities across the region to serve you better. Each location offers a range of services with convenient hours and ample parking.</p>
+              
+              <div class="locations-container">
+                <div class="location-cards">
+                  <article class="location-card" data-location="downtown">
+                    <h4>Downtown Medical Center</h4>
+                    <p class="location-address">
+                      <span aria-hidden="true">📍</span>
+                      123 Main Street<br>
+                      Suite 100<br>
+                      Cityville, ST 12345
+                    </p>
+                    <p class="location-phone">
+                      <span aria-hidden="true">📞</span>
+                      <a href="tel:+15551234567">(555) 123-4567</a>
+                    </p>
+                    <p class="location-hours">
+                      <strong>Hours:</strong> Mon-Fri 8 AM - 6 PM, Sat 9 AM - 2 PM
+                    </p>
+                    <p class="location-services"><strong>Services:</strong> Primary Care, Cardiology, Lab Services</p>
+                  </article>
+
+                  <article class="location-card" data-location="northside">
+                    <h4>Northside Family Clinic</h4>
+                    <p class="location-address">
+                      <span aria-hidden="true">📍</span>
+                      456 Oak Avenue<br>
+                      Building B<br>
+                      Cityville, ST 12346
+                    </p>
+                    <p class="location-phone">
+                      <span aria-hidden="true">📞</span>
+                      <a href="tel:+15551234568">(555) 123-4568</a>
+                    </p>
+                    <p class="location-hours">
+                      <strong>Hours:</strong> Mon-Fri 7 AM - 7 PM, Sat-Sun 8 AM - 4 PM
+                    </p>
+                    <p class="location-services"><strong>Services:</strong> Pediatrics, Urgent Care, Dental</p>
+                  </article>
+
+                  <article class="location-card" data-location="westend">
+                    <h4>West End Specialty Center</h4>
+                    <p class="location-address">
+                      <span aria-hidden="true">📍</span>
+                      789 Elm Boulevard<br>
+                      Floor 3<br>
+                      Cityville, ST 12347
+                    </p>
+                    <p class="location-phone">
+                      <span aria-hidden="true">📞</span>
+                      <a href="tel:+15551234569">(555) 123-4569</a>
+                    </p>
+                    <p class="location-hours">
+                      <strong>Hours:</strong> Mon-Fri 8 AM - 5 PM
+                    </p>
+                    <p class="location-services"><strong>Services:</strong> Orthopedics, Mental Health, Physical Therapy</p>
+                  </article>
+                </div>
+
+                <div class="map-container">
+                  <img 
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect fill='%23e0e0e0' width='600' height='400'/%3E%3Ctext x='50%25' y='30%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23666'%3ELocations Map%3C/text%3E%3Ccircle cx='200' cy='200' r='12' fill='%23d32f2f'/%3E%3Ctext x='200' y='230' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%23333'%3EDowntown%3C/text%3E%3Ccircle cx='350' cy='150' r='12' fill='%231976d2'/%3E%3Ctext x='350' y='180' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%23333'%3ENorthside%3C/text%3E%3Ccircle cx='450' cy='250' r='12' fill='%23388e3c'/%3E%3Ctext x='450' y='280' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%23333'%3EWest End%3C/text%3E%3C/svg%3E" 
+                    alt="Map showing three Digital Experience Healthcare locations: Downtown Medical Center, Northside Family Clinic, and West End Specialty Center"
+                    class="location-map"
+                  >
+                  <p class="map-note"><em>Placeholder map - Click location cards to highlight on map</em></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Digital Experience Healthcare</h3>
+          <p>Providing compassionate, comprehensive care to our community since 2010.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="./index.html">Home</a></li>
+            <li><a href="./more-information.html">More Information</a></li>
+            <li><a href="./contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>
+            Phone: <a href="tel:+15551234567">(555) 123-4567</a><br>
+            Email: <a href="mailto:info@digitalexperience.health">info@digitalexperience.health</a>
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Digital Experience Healthcare. All rights reserved. | <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Service</a></p>
+        <p class="footer-disclaimer"><small>This is a demonstration website. All content is placeholder and for illustrative purposes only.</small></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button type="button" class="back-to-top" data-testid="back-to-top" aria-label="Back to top">
+    <span aria-hidden="true">↑</span>
+  </button>
+
+  <!-- Scripts -->
+  <script src="./main.js"></script>
+  <script src="./more-information.js"></script>
+</body>
+</html>
+```
+
+I've created a comprehensive, semantic HTML5 document for the "More Information" page with the following features:
+
+## Key Features Implemented:
+
+1. **Semantic Structure**: Proper HTML5 elements (`<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`)
+
+2. **Accessibility**:
+   - Skip-to-content link
+   - Proper ARIA labels and roles
+   - `aria-expanded`, `aria-controls`, `aria-labelledby` for accordion and tabs
+   - Keyboard navigation support attributes
+   - Visually hidden labels where needed
+
+3. **Search & Filter Section**:
+   - Search input with proper labeling
+   - 6 filter chips (Primary Care, Pediatrics, Dental, Cardiology, Orthopedics, Mental Health)
+   - Sort dropdown (Alphabetical/Popularity)
+
+4. **Service Cards**:
+   - 8 service cards with data attributes for filtering (`data-tags`, `data-popularity`)
+   - Skeleton loaders (initially visible, replaced by JS)
+   - Lazy-loaded images with SVG placeholders
+   - No-results message container
+
+5. **FAQ Accordion**:
+   - 5 FAQ items with proper ARIA attributes
+   - Expandable/collapsible panels
+   - Semantic heading structure
+
+6. **Tabbed Content**:
+   - 3 tabs: Services, Insurance, Locations
+   - Proper ARIA roles and states
+   - Rich content in each panel including location cards and map placeholder
+
+7. **Testing Hooks**: All required `data-testid` attributes included for automated testing
+
+8. **Navigation**: Sticky navbar with active page highlighting, theme toggle, and back-to-top button
+
+The page is ready for the JavaScript (`more-information.js`) to add interactivity for search, filtering, sorting, accordion state management, and tab switching.

@@ -1,0 +1,59 @@
+{
+  "file_path": "digital-experience-healthcare/styles.css",
+  "language": "CSS",
+  "overview": "The stylesheet defines a design system and layout utilities for a healthcare digital experience frontend. It establishes design tokens, responsive grid layouts, typography, accessibility helpers, and container spacing for consistent UI rendering across breakpoints.",
+  "key_components": [
+    "Design tokens (:root variables for colors, typography, spacing, shadows, transitions)",
+    "Base reset and typography styles",
+    "Responsive grid layouts (.intro-grid, .service-cards-grid, .contact-grid, etc.)",
+    "Hero and section layout utilities",
+    "Accessibility helpers (.visually-hidden, .skip-to-content)",
+    "Container and spacing utilities"
+  ],
+  "interactions": [
+    "Hover and focus-visible states for links and buttons",
+    "Skip-to-content focus reveal for keyboard navigation",
+    "Responsive layout adjustments via media queries",
+    "Dark mode color scheme adjustments"
+  ],
+  "routes": [
+    "No explicit routes defined; CSS applies globally across all frontend routes"
+  ],
+  "selectors": [
+    ".container",
+    ".hero-container",
+    ".intro-grid",
+    ".service-cards-grid",
+    ".contact-form-wrapper",
+    ".tabs-container",
+    ".filter-sort-container",
+    ".search-bar",
+    ".cta-buttons",
+    ".footer-content",
+    ".visually-hidden",
+    ".skip-to-content"
+  ],
+  "data_flow": [
+    "CSS variables cascade from :root to components",
+    "Media queries override base styles at breakpoints",
+    "Dark mode overrides applied via prefers-color-scheme media query"
+  ],
+  "accessibility": [
+    ".visually-hidden for screen reader-only content",
+    ".skip-to-content for keyboard navigation",
+    "Focus-visible outlines for interactive elements",
+    "High-contrast color tokens for dark mode"
+  ],
+  "analytics": [
+    "No analytics hooks defined in CSS; tracking expected at JS layer"
+  ],
+  "test_ideas": [
+    "Verify dark mode color tokens apply correctly when prefers-color-scheme=dark",
+    "Validate skip-to-content link becomes visible on keyboard focus",
+    "Check focus-visible outlines appear on tab navigation for interactive elements",
+    "Ensure responsive grid layouts adjust columns at 640px, 768px, and 1024px breakpoints",
+    "Confirm container padding scales correctly across breakpoints",
+    "Test hover and focus states for links and buttons for color contrast compliance",
+    "Validate visually-hidden elements remain accessible to screen readers"
+  ]
+}

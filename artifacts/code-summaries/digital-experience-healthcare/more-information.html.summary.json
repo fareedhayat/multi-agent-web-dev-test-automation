@@ -1,0 +1,72 @@
+{
+  "file_path": "digital-experience-healthcare/more-information.html",
+  "language": "HTML",
+  "overview": "The 'More Information' page of Digital Experience Healthcare provides a searchable and filterable list of healthcare services. It includes navigation, theme toggling, accessibility features, and dynamic service card rendering controlled by JavaScript.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with brand and menu",
+    "Theme toggle button",
+    "Search input field",
+    "Filter chips for service categories",
+    "Sort dropdown",
+    "Service cards grid with skeleton loaders and dynamic content"
+  ],
+  "interactions": [
+    "Clicking skip-to-content focuses main content",
+    "Theme toggle switches between light/dark mode",
+    "Typing in search input filters visible service cards",
+    "Clicking filter chips applies category filters",
+    "Changing sort dropdown reorders service cards",
+    "Service cards reveal after data load replacing skeleton loaders"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-information.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='search-input']",
+    "[data-testid^='filter-chip-']",
+    "[data-testid='sort-dropdown']",
+    "[data-testid='service-card']",
+    "[data-testid='skeleton-loader']",
+    "#service-cards-container"
+  ],
+  "data_flow": [
+    "Initial page load shows skeleton loaders",
+    "JavaScript fetches or reveals service card data",
+    "Search input filters cards by title or description",
+    "Filter chips modify visible cards based on data-tags",
+    "Sort dropdown changes order based on data-popularity or alphabetical",
+    "Theme toggle updates global UI state"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA labels on navigation and filter groups",
+    "Visually hidden labels for search input",
+    "Alt text for all service images",
+    "Keyboard focusable buttons and inputs",
+    "aria-current on active navigation link"
+  ],
+  "analytics": [
+    "Track search input usage and query terms",
+    "Track filter chip clicks and selected categories",
+    "Track sort dropdown changes",
+    "Track theme toggle usage",
+    "Track service card impressions and clicks"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link moves focus correctly",
+    "Validate navbar links navigate to correct routes",
+    "Ensure theme toggle updates body class and persists state",
+    "Test search filtering accuracy and case insensitivity",
+    "Confirm filter chips toggle visibility of correct service cards",
+    "Check sort dropdown reorders cards by popularity/alphabetical",
+    "Ensure skeleton loaders are replaced by service cards after load",
+    "Validate all images have non-empty alt attributes",
+    "Confirm analytics events fire on user interactions"
+  ]
+}

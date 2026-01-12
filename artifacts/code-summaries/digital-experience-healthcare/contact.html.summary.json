@@ -1,0 +1,74 @@
+{
+  "file_path": "digital-experience-healthcare/contact.html",
+  "language": "HTML",
+  "overview": "The Contact Us page for Digital Experience Healthcare provides a responsive, accessible form for users to submit inquiries, along with contact details, success/error banners, and FAQ content. It includes navigation, theme toggle, and validation-ready form fields with ARIA support.",
+  "key_components": [
+    "Navigation bar with theme toggle",
+    "Hero section with title and subtitle",
+    "Success and error alert banners",
+    "Contact information panel",
+    "Contact form with validation messages",
+    "FAQ section"
+  ],
+  "interactions": [
+    "Theme toggle button switches between light and dark modes",
+    "Form fields validate required inputs and email format",
+    "Submit button enables only when required fields are valid",
+    "Success banner appears after successful submission",
+    "Error banner appears on failed submission",
+    "Banners can be dismissed via close buttons",
+    "Character count updates dynamically in message field"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-information.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    "[data-testid='success-banner']",
+    "[data-testid='error-banner']",
+    "[data-testid='contact-form']",
+    "[data-testid='field-fullname']",
+    "[data-testid='field-email']",
+    "[data-testid='field-phone']",
+    "[data-testid='field-message']",
+    "[data-testid='submit-button']",
+    "[data-testid^='validation-']"
+  ],
+  "data_flow": [
+    "User inputs captured in form fields",
+    "Client-side validation updates validation-message elements",
+    "Submit triggers async request (likely POST) to backend endpoint",
+    "Response toggles visibility of success or error banners",
+    "Form reset or disabled state managed post-submission"
+  ],
+  "accessibility": [
+    "Skip to content link for keyboard navigation",
+    "ARIA roles and labels on navigation, banners, and form fields",
+    "aria-live regions for validation and alert messages",
+    "aria-required and aria-describedby attributes for form inputs",
+    "Keyboard focus management for dismissible banners"
+  ],
+  "analytics": [
+    "Track theme toggle usage",
+    "Track form submission success and failure events",
+    "Track validation error occurrences",
+    "Track FAQ link clicks (e.g., More Information link)"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link focuses main content",
+    "Validate theme toggle persists mode across reloads",
+    "Ensure form validation messages appear for empty or invalid fields",
+    "Confirm submit button enables only when required fields are valid",
+    "Simulate successful submission and verify success banner visibility",
+    "Simulate failed submission and verify error banner visibility",
+    "Test banner close buttons hide alerts and restore focus",
+    "Check character count updates correctly in message field",
+    "Validate ARIA attributes and roles for accessibility compliance",
+    "Verify navigation links route correctly and active state updates"
+  ]
+}

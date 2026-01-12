@@ -385,7 +385,7 @@ async def run_playwright_test_agent(
         "allow_multiple_tool_calls": True,
     }
 
-    context_manager = client.create_agent(max_output_tokens=32000, **agent_kwargs)
+    context_manager = client.create_agent(max_output_tokens=60000, **agent_kwargs)
 
     # try:
     #     context_manager = client.create_agent(max_output_tokens=16000, **agent_kwargs)

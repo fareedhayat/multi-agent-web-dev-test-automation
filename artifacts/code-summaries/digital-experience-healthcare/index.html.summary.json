@@ -1,0 +1,68 @@
+{
+  "file_path": "digital-experience-healthcare/index.html",
+  "language": "HTML",
+  "overview": "A semantic, accessible, and responsive healthcare homepage featuring navigation, hero content, informational sections, CTAs, and a footer. Includes accessibility hooks, ARIA roles, and test IDs for automation coverage.",
+  "key_components": [
+    "Navbar with brand and navigation links",
+    "Hero section with heading, description, and SVG illustration",
+    "Introduction section with three feature cards",
+    "CTA section with service and contact links",
+    "Information section listing healthcare offerings",
+    "Footer with quick links and contact info",
+    "Theme toggle button",
+    "Back-to-top button",
+    "Toast container for notifications"
+  ],
+  "interactions": [
+    "Clicking navigation links routes to respective pages",
+    "Theme toggle switches dark/light mode and updates aria-pressed",
+    "Skip-to-content link focuses main content",
+    "Back-to-top button scrolls to top when visible",
+    "CTA buttons navigate to services or contact pages"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-information.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='navbar']",
+    "[data-testid='skip-to-content']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    "[data-testid='cta-links']",
+    "[data-testid='cta-services']",
+    "[data-testid='cta-contact']",
+    "[data-testid='back-to-top']"
+  ],
+  "data_flow": [
+    "Static HTML content rendered from index.html",
+    "Theme state toggled via main.js and reflected in DOM attributes",
+    "Toast container receives dynamic messages from scripts",
+    "Navigation and CTA links trigger client-side or full-page navigation"
+  ],
+  "accessibility": [
+    "Skip link enables keyboard users to jump to main content",
+    "ARIA roles for navigation, contentinfo, and status regions",
+    "aria-labels and aria-pressed states for interactive elements",
+    "Proper heading hierarchy and semantic structure",
+    "Keyboard focusable buttons and links"
+  ],
+  "analytics": [
+    "Potential click tracking on CTA buttons and theme toggle",
+    "Navigation link usage metrics",
+    "Scroll or visibility tracking for back-to-top button",
+    "Toast event logging for user notifications"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link focuses #main-content",
+    "Ensure theme-toggle toggles aria-pressed and visual theme",
+    "Validate navigation links route correctly and highlight active page",
+    "Check CTA buttons navigate to correct URLs",
+    "Confirm back-to-top button appears after scroll and scrolls to top",
+    "Validate all sections render with correct headings and content",
+    "Run accessibility audit for ARIA roles and keyboard navigation",
+    "Verify toast container announces messages via aria-live",
+    "Ensure responsive layout and no visual regressions across viewports"
+  ]
+}
