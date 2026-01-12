@@ -65,7 +65,36 @@ def read_test_plan(plan_path: Path) -> str:
     return plan_path.read_text(encoding="utf-8").strip()
 
 
-def build_execution_prompt(plan_markdown: str, base_url: str | None = None) -> str:
+def split_plan_into_suites(plan_markdown: str) -> list[tuple[str, str]]:
+    """Break the Markdown plan into per-suite sections."""
+    suites: list[tuple[str, str]] = []
+    current_name: Optional[str] = None
+    current_lines: list[str] = []
+    for raw_line in plan_markdown.splitlines():
+        stripped = raw_line.strip()
+        if stripped.startswith("## "):
+            if current_name and current_lines:
+                suites.append((current_name, "\n".join(current_lines).strip()))
+            current_name = stripped[3:].strip()
+            current_lines = [stripped]
+        elif current_name:
+            if stripped == "---":
+                continue
+            current_lines.append(raw_line)
+    if current_name and current_lines:
+        suites.append((current_name, "\n".join(current_lines).strip()))
+    return [(name, section) for name, section in suites if section]
+
+
+def build_execution_prompt(
+    plan_markdown: str,
+    base_url: str | None = None,
+    *,
+    suite_markdown: str | None = None,
+    suite_name: str | None = None,
+    suite_index: Optional[int] = None,
+    suite_total: Optional[int] = None,
+) -> str:
     """Create the prompt that instructs the agent how to execute the plan."""
     url_directive = ""
     if base_url:
@@ -73,14 +102,27 @@ def build_execution_prompt(plan_markdown: str, base_url: str | None = None) -> s
             f"The application under test is served at {base_url}. Always load and reload this origin only; "
             "do not probe alternative hosts or ports when scenarios require navigation or reset. "
         )
+    scope_directive = ""
+    if suite_markdown is not None:
+        scope_parts: list[str] = [
+            "Execute only the following suite from the broader test plan, completing every scenario in order.",
+        ]
+        if suite_name:
+            scope_parts.insert(0, f"You are running suite '{suite_name}'.")
+        if suite_index is not None and suite_total is not None:
+            scope_parts.append(
+                f"This is suite {suite_index} of {suite_total}; defer other suites because they will be handled separately."
+            )
+        scope_directive = " ".join(scope_parts) + " "
+    plan_body = plan_markdown if suite_markdown is None else f"# Playwright Test Plan\n\n{suite_markdown}"
     return (
         "You are a QA automation executor. You receive a Playwright test plan in Markdown. "
         "For each suite and scenario, translate the intent into concrete Playwright test steps. "
         "Use the Playwright MCP tool to run the necessary tests against the target application. "
-        f"{url_directive}"
+        f"{url_directive}{scope_directive}"
         "Report consolidated pass/fail results, notable logs, and any follow-up actions.\n\n"
         "Playwright Test Plan:\n\n"
-        f"{plan_markdown}"
+        f"{plan_body}"
     )
 
 
@@ -348,6 +390,7 @@ async def run_playwright_test_agent(
         )
 
     plan_markdown = read_test_plan(plan_path)
+    suite_sections = split_plan_into_suites(plan_markdown)
     prompt = build_execution_prompt(plan_markdown, base_url)
 
     server_process: Optional[subprocess.Popen[str]] = None
@@ -387,23 +430,40 @@ async def run_playwright_test_agent(
 
     context_manager = client.create_agent(max_output_tokens=60000, **agent_kwargs)
 
-    # try:
-    #     context_manager = client.create_agent(max_output_tokens=16000, **agent_kwargs)
-    # except TypeError:
-    #     context_manager = client.create_agent(**agent_kwargs)
-
     try:
         async with context_manager as agent:
-            thread = agent.get_new_thread()
+            suites_to_run: list[tuple[Optional[str], Optional[str]]] = (
+                [(name, body) for name, body in suite_sections]
+                if suite_sections
+                else [(None, None)]
+            )
+            response_updates: list[Any] = []
             if echo:
                 print("Agent: ", end="", flush=True)
-            response_updates = []
-            async for chunk in agent.run_stream(prompt, thread=thread):
-                response_updates.append(chunk)
-                if chunk.text:
-                    transcript.append(chunk.text)
-                    if echo:
-                        print(chunk.text, end="", flush=True)
+            for index, (suite_name, suite_body) in enumerate(suites_to_run, start=1):
+                suite_prompt = prompt
+                if suite_body is not None:
+                    suite_prompt = build_execution_prompt(
+                        plan_markdown,
+                        base_url,
+                        suite_markdown=suite_body,
+                        suite_name=suite_name,
+                        suite_index=index,
+                        suite_total=len(suites_to_run),
+                    )
+                thread = agent.get_new_thread()
+                suite_updates: list[Any] = []
+                async for chunk in agent.run_stream(suite_prompt, thread=thread):
+                    suite_updates.append(chunk)
+                    if chunk.text:
+                        transcript.append(chunk.text)
+                        if echo:
+                            print(chunk.text, end="", flush=True)
+                response_updates.extend(suite_updates)
+                if suite_updates and index < len(suites_to_run):
+                    transcript.append("\n")
+                if echo and index < len(suites_to_run):
+                    print()
             if echo:
                 print()
             log_agent_stream_metadata(
