@@ -14,8 +14,8 @@ from pydantic import Field
 
 try:
     from .agent_debug import log_agent_response_metadata
-except ImportError:  # pragma: no cover - allows script execution via python agents/coder_agent.py
-    from agent_debug import log_agent_response_metadata  # type: ignore
+except ImportError:
+    from agent_debug import log_agent_response_metadata
 
 load_dotenv()
 
@@ -245,7 +245,7 @@ async def invoke_llm_chat(
             temperature=temperature,
             max_tokens=max_tokens,
         )
-    except Exception as exc:  # pragma: no cover - network errors
+    except Exception as exc:
         LOGGER.error("LLM call failed: %s", exc)
         return None
 
@@ -399,7 +399,6 @@ def extract_classes_from_html(html: str) -> List[str]:
             cls = cls.strip()
             if cls:
                 classes.add(cls)
-    # Common hooks from data-testid
     for match in re.finditer(r'data-testid\s*=\s*"([^"]+)"', html):
         classes.add(match.group(1).strip())
     return sorted(classes)
@@ -429,7 +428,7 @@ async def generate_site_plan(
     cleaned = clean_llm_completion(completion)
     try:
         plan = json.loads(cleaned)
-    except json.JSONDecodeError as exc:  # pragma: no cover - defensive
+    except json.JSONDecodeError as exc:
         LOGGER.error("Failed to parse site plan JSON: %s", exc)
         raise RuntimeError("Invalid site plan JSON returned by LLM.") from exc
 
@@ -556,7 +555,6 @@ async def generate_stylesheet(
     config: Dict[str, object],
     agent: Optional[Any],
 ) -> str:
-    # Multi-pass CSS generation to ensure completeness
     llm_cfg = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
     boosted_cfg = {
         **config,
@@ -565,7 +563,6 @@ async def generate_stylesheet(
 
     parts: List[str] = []
 
-    # Pass 1: Reset + Base + Layout
     p1 = (
         "Write CSS sections: (1) Reset + Base Typography, (2) Layout Utilities (container, grid, spacing). "
         "Use design tokens and class list:\n{classes}"
@@ -574,7 +571,6 @@ async def generate_stylesheet(
     if r1:
         parts.append(clean_llm_completion(r1))
 
-    # Pass 2: Components
     p2 = (
         "Write CSS for components: navbar, hero, buttons (.btn, .btn-primary, .btn-secondary), cards (.intro-card, .service-card), "
         "toast (.toast, .toast-container), skip-link (.skip-link), theme-toggle (.theme-toggle). Include hover/focus/active states. "

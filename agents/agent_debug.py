@@ -1,11 +1,3 @@
-"""Utilities for inspecting Agent Framework responses.
-
-These helpers centralize response metadata logging so that individual agents can
-opt into richer diagnostics without duplicating serialization logic.
-Set the environment variable ``AGENT_FRAMEWORK_DEBUG_METADATA`` to ``1`` (or
-``true``/``yes``/``on``) to enable logging.
-"""
-
 from __future__ import annotations
 
 import json
@@ -29,10 +21,10 @@ def _stringify(value: Any) -> Any:
         return None
     if hasattr(value, "to_dict") and callable(value.to_dict):
         try:
-            return value.to_dict(exclude=None, exclude_none=True)  # type: ignore[arg-type]
+            return value.to_dict(exclude=None, exclude_none=True)
         except TypeError:
-            return value.to_dict()  # type: ignore[call-arg]
-        except Exception:  # pragma: no cover - defensive
+            return value.to_dict()
+        except Exception:
             return repr(value)
     if hasattr(value, "value"):
         candidate = getattr(value, "value")
@@ -83,13 +75,13 @@ def log_agent_response_metadata(
         messages = getattr(response, "messages")
         try:
             metadata["message_count"] = len(messages)
-        except Exception:  # pragma: no cover - defensive
+        except Exception:
             metadata["message_count"] = "unknown"
 
     if not metadata and hasattr(response, "to_dict") and callable(response.to_dict):
         try:
-            metadata = response.to_dict(exclude={"messages", "contents"}, exclude_none=True)  # type: ignore[arg-type]
-        except Exception:  # pragma: no cover - defensive
+            metadata = response.to_dict(exclude={"messages", "contents"}, exclude_none=True)
+        except Exception:
             metadata = {"repr": repr(response)}
 
     logger.info("[%s] Agent response metadata: %s", agent_label, json.dumps(metadata, default=str))
@@ -112,7 +104,7 @@ def log_agent_stream_metadata(
 
     try:
         response = AgentRunResponse.from_agent_run_response_updates(list(updates))
-    except Exception as exc:  # pragma: no cover - defensive
+    except Exception as exc:
         logger.info(
             "[%s] Unable to materialize streaming updates for metadata logging: %s",
             agent_label,

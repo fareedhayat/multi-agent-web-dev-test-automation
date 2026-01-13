@@ -22,18 +22,15 @@ from pydantic import Field
 
 try:
     from .agent_debug import log_agent_stream_metadata
-except ImportError:  # pragma: no cover - script execution fallback
-    from agent_debug import log_agent_stream_metadata  # type: ignore
+except ImportError:
+    from agent_debug import log_agent_stream_metadata
 
-# Load environment configuration
 load_dotenv()
 
-# Anthropic Foundry configuration (shared with other agents)
 ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
 ANTHROPIC_FOUNDRY_DEPLOYMENT = os.getenv("ANTHROPIC_FOUNDRY_DEPLOYMENT")
 ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
 
-# Default location for the generated Playwright test plan
 DEFAULT_TEST_PLAN_PATH = Path("artifacts") / "playwright-test-plan.md"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 

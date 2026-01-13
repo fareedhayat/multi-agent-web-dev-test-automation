@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 
 try:
     from .agent_debug import log_agent_stream_metadata
-except ImportError:  # pragma: no cover - script execution fallback
-    from agent_debug import log_agent_stream_metadata  # type: ignore
+except ImportError:
+    from agent_debug import log_agent_stream_metadata
 
 try:
     from .test_writer_helpers import (
@@ -28,7 +28,7 @@ try:
         summarize_code_files,
         generate_test_plan_with_anthropic,
     )
-except ImportError:  # Allow running as a stand-alone script
+except ImportError:
     import sys
 
     CURRENT_DIR = Path(__file__).resolve().parent
@@ -38,7 +38,7 @@ except ImportError:  # Allow running as a stand-alone script
     if str(PARENT_DIR) not in sys.path:
         sys.path.insert(0, str(PARENT_DIR))
 
-    from test_writer_helpers import (  # type: ignore
+    from test_writer_helpers import (
         SUMMARY_FILENAME,
         TEST_PLAN_FILENAME,
         CODE_SUMMARY_DIRNAME,

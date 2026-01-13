@@ -4,54 +4,50 @@ Pages & Navigation:
 - Home page: hero section with intro and CTA buttons linking to other pages.
 - More Information page: services overview with interactive components.
 - Contact Us page: form with client-side validation and feedback.
-- Sticky navbar: highlights active page, includes 'Back to top' button after scroll.
+- Sticky navbar: highlights active page, back-to-top button appears after scroll.
 - Smooth scrolling for in-page anchors; respects reduced motion.
 
 Contact Us Form:
-- Fields: Full Name (required), Email (required, valid format), Phone (optional, auto-format), Message (required, 20-1000 chars).
+- Fields: Full Name (required), Email (required, valid), Phone (optional, auto-format), Message (required, 20-1000 chars).
 - Real-time validation: inline messages; disable Submit until valid.
-- Submission UX: loading spinner, simulate success/failure (800-1500ms), show toast notification.
-- Success: clear form, focus first field, show dismissible success banner, log analytics event.
+- Submission UX: loading spinner, simulate success/failure (800-1500ms), toast notification for outcome.
+- Success: clear form, focus first field, show dismissible banner, log analytics event.
 - Failure: keep inputs, focus first invalid field, show error banner with guidance.
 - Accessibility: proper labels, ARIA aria-invalid, keyboard navigation, clear focus styles.
 
 More Information Page:
-- Search: filters service cards by title/description; debounced at ~250ms.
+- Search: filters service cards by title/description, debounced at ~250ms.
 - Filters: tag chips (multi-select) combined with search.
-- Sort: dropdown to sort cards by Alphabetical or Popularity (mock data).
-- FAQ accordion: expand/collapse answers; one open at a time; persist state via localStorage.
-- Tabbed content: switch between Services, Insurance, and Locations with smooth transitions.
-- Optional map embed: highlight map marker on location card click (client-side only).
+- Sort: dropdown for Alphabetical or Popularity (mock data).
+- FAQ accordion: expand/collapse, one open at a time, state saved in localStorage.
+- Tabbed content: switch between Services, Insurance, Locations with smooth transitions.
+- Optional map embed: static image/iframe; clicking location highlights map marker.
 
 Shared UI/Interactions:
 - Theme toggle: light/dark mode persisted in localStorage.
-- Toast notifications: reusable component; auto-dismiss with manual close.
-- Lazy-load images with loading='lazy'; skeleton loaders for cards until ready.
+- Toast notifications: reusable, auto-dismiss, manual close.
+- Lazy-load images with loading='lazy'; skeleton loaders for cards.
+- Accessibility: WCAG 2.1 AA, color contrast, focus order, skip-to-content link.
+- Keyboard-first: all interactive elements operable by keyboard.
 
-Accessibility & Performance:
-- WCAG 2.1 AA: color contrast, focus order, skip-to-content link, ARIA roles.
-- Keyboard-first: all interactive elements operable via keyboard.
-- Performance: debounce search, minimize reflow, avoid heavy libraries.
-- Test on mobile: mobile-first responsive layout (320px+).
+Performance:
+- Debounce search; avoid heavy libraries; minimize reflow.
+- Mobile-first responsive layout (320px to desktop).
+- Test on latest Chrome/Edge/Firefox/Safari.
+- Lighthouse performance and accessibility scores ≥ 90 on desktop.
 
-Non-Functional Requirements:
-- SEO: meaningful titles, meta description, favicon, structured heading hierarchy.
+SEO & Content:
+- SEO basics: meaningful titles, meta description, favicon, structured headings.
 - Content: placeholder copy/images; no real personal data stored or sent.
-- Mobile-first responsive layout; test on Chrome/Edge/Firefox/Safari.
 
 Analytics:
 - Log events to window.analyticsLog with { type, timestamp, payload }.
 - Track actions: form_submit_success, form_submit_error, search, filter_change, theme_toggle.
-- Hidden debug panel: toggle via keyboard (e.g., Ctrl+Shift+D) to view recent events.
+- Hidden debug panel: toggle via keyboard (e.g., Ctrl+Shift+D) to view events.
 
-Acceptance Tests (Playwright):
-- Navbar: sticky, highlights active page, 'Back to top' appears after scroll.
-- Theme toggle: persists across refresh, respects reduced motion.
+Acceptance Tests:
+- Navbar: sticky, highlights active page, back-to-top appears after scroll.
+- Theme toggle: persists across refresh; respects reduced motion.
 - Contact form: validation messages, disabled submit when invalid, success clears inputs, failure focuses first invalid field.
-- More Info: search filters cards, filters/sort work together, accordion persists state, tabs switch views, skeleton loaders replaced.
-- Accessibility: Tab cycles logically, ARIA attributes on accordion and tabs.
-
-Success Criteria:
-- All acceptance tests pass.
-- No console errors in latest browsers.
-- Lighthouse performance and accessibility scores ≥ 90 on desktop.
+- More Info: search filters cards, filters/sort work together, accordion state persists, tabs switch views, skeleton loaders replaced.
+- Accessibility: Tab cycles logically; ARIA attributes on accordion and tabs.

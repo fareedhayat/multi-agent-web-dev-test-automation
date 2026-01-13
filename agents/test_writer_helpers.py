@@ -13,8 +13,8 @@ from anthropic import AsyncAnthropicFoundry
 
 try:
     from .agent_debug import log_agent_response_metadata
-except ImportError:  # pragma: no cover - script execution fallback
-    from agent_debug import log_agent_response_metadata  # type: ignore
+except ImportError:
+    from agent_debug import log_agent_response_metadata
 
 SUMMARY_FILENAME = "requirements-summary.txt"
 TEST_PLAN_FILENAME = "playwright-test-plan.md"
@@ -79,7 +79,6 @@ TEST_GENERATION_SYSTEM_PROMPT = (
     "Do not return executable code; keep the response concise so the full plan fits in one reply."
 )
 
-# Prompt compaction limits to reduce token usage
 PLAN_MAX_REQUIREMENTS_CHARS = 2000
 PLAN_MAX_FILES = 25
 PLAN_MAX_ITEMS_PER_SECTION = 6
