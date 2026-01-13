@@ -37,6 +37,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SERVER_COMMAND = ["python", "-m", "http.server", "8000"]
 DEFAULT_SERVER_CWD = Path("artifacts") / "digital-experience-healthcare"
 DEFAULT_BASE_URL = "http://localhost:8000"
+DEFAULT_LOG_PATH = Path("artifacts") / "playwright-run.log"
 SERVER_READY_TIMEOUT = 15
 SERVER_CHECK_INTERVAL = 0.5
 
@@ -373,6 +374,7 @@ async def run_playwright_test_agent(
     server_command: Optional[list[str]] = None,
     server_cwd: Optional[Path] = None,
     base_url: Optional[str] = DEFAULT_BASE_URL,
+    log_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Execute the generated tests via the Playwright MCP server."""
     required_env = {
@@ -418,6 +420,13 @@ async def run_playwright_test_agent(
 
     transcript = []
 
+    log_target = log_path or DEFAULT_LOG_PATH
+    resolved_log = log_target if log_target.is_absolute() else (PROJECT_ROOT / log_target).resolve()
+    resolved_log.parent.mkdir(parents=True, exist_ok=True)
+    log_file_handle = resolved_log.open("w", encoding="utf-8")
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    log_file_handle.write(f"# Playwright Test Run\nStarted: {timestamp}\nPlan: {plan_path}\n\n")
+
     agent_kwargs = {
         "name": "PlaywrightRunnerAgent",
         "instructions": instructions,
@@ -454,11 +463,15 @@ async def run_playwright_test_agent(
                     suite_updates.append(chunk)
                     if chunk.text:
                         transcript.append(chunk.text)
+                        log_file_handle.write(chunk.text)
+                        log_file_handle.flush()
                         if echo:
                             print(chunk.text, end="", flush=True)
                 response_updates.extend(suite_updates)
                 if suite_updates and index < len(suites_to_run):
                     transcript.append("\n")
+                    log_file_handle.write("\n")
+                    log_file_handle.flush()
                 if echo and index < len(suites_to_run):
                     print()
             if echo:
@@ -469,11 +482,19 @@ async def run_playwright_test_agent(
                 logger=LOGGER,
             )
     finally:
+        log_file_handle.write("\n")
+        log_file_handle.flush()
+        log_file_handle.close()
         if start_server and server_process is not None:
             stop_local_server(server_process)
 
     output_text = "".join(transcript).strip()
     summary_text = summarize_execution_output(output_text, plan_markdown)
+
+    with resolved_log.open("a", encoding="utf-8") as summary_file:
+        summary_file.write("\n# Summary\n")
+        summary_file.write(summary_text)
+        summary_file.write("\n")
 
     try:
         relative_plan = plan_path.relative_to(PROJECT_ROOT)
