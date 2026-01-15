@@ -1,0 +1,81 @@
+{
+  "file_path": "digital-experience-healthcare/main.js",
+  "language": "JavaScript",
+  "overview": "Frontend script for a healthcare digital experience site providing interactive UI behaviors such as theme toggling, smooth scrolling, filtering, sorting, FAQ accordion, tabs, and analytics logging.",
+  "key_components": [
+    "Theme toggle",
+    "Back to top button",
+    "Smooth scroll anchors",
+    "Navbar active state",
+    "Search input with debounce",
+    "Filter chips",
+    "Sort dropdown",
+    "Service cards filtering and sorting",
+    "FAQ accordion",
+    "Tabs component",
+    "Contact form validation (partial)"
+  ],
+  "interactions": [
+    "Click theme toggle to switch between light/dark mode",
+    "Scroll triggers back-to-top visibility",
+    "Anchor clicks perform smooth scroll to target",
+    "Navbar highlights active link based on current route",
+    "Typing in search input filters cards after debounce",
+    "Clicking filter chips toggles active filters",
+    "Changing sort dropdown reorders cards",
+    "Clicking FAQ buttons expands/collapses panels and persists state",
+    "Clicking tab buttons switches visible panel"
+  ],
+  "routes": [
+    "/ (homepage)",
+    "/services",
+    "/contact",
+    "/faq",
+    "/about"
+  ],
+  "selectors": [
+    "[data-testid='theme-toggle']",
+    "[data-testid='back-to-top']",
+    "[data-testid='navbar']",
+    "[data-testid='search-input']",
+    "[data-testid='filter-chip']",
+    "[data-testid='sort-dropdown']",
+    "[data-testid='service-card']",
+    "[data-testid='faq-item']",
+    "[data-testid='faq-button']",
+    "[data-testid='faq-panel']",
+    "[data-testid='tab-button']",
+    "[data-testid='tab-panel']"
+  ],
+  "data_flow": [
+    "LocalStorage used for theme and FAQ open state persistence",
+    "Search input value and activeFilters array drive card visibility",
+    "Sort dropdown updates currentSort variable",
+    "filterAndSortCards reads DOM attributes (data-title, data-description, data-tags, data-popularity)",
+    "Analytics events logged to window.analyticsLog via logEvent()"
+  ],
+  "accessibility": [
+    "ARIA attributes: aria-hidden, aria-current, aria-pressed, aria-expanded, aria-selected",
+    "Focus management on smooth scroll targets",
+    "Reduced motion respected via prefers-reduced-motion media query",
+    "Keyboard accessibility implied for buttons and links"
+  ],
+  "analytics": [
+    "logEvent('theme_toggle', {theme})",
+    "logEvent('search', {query})",
+    "logEvent('filter_change', {filters})",
+    "logEvent('sort_change', {sort})"
+  ],
+  "test_ideas": [
+    "Verify theme toggle updates data-theme and persists across reloads",
+    "Ensure back-to-top button visibility toggles correctly on scroll",
+    "Validate smooth scroll behavior and focus management for anchor links",
+    "Confirm navbar highlights correct active link per route",
+    "Test search debounce timing and card filtering accuracy",
+    "Check filter chip toggling updates aria-pressed and activeFilters array",
+    "Validate sort dropdown changes reorder cards correctly",
+    "Ensure FAQ accordion allows only one open item and persists state",
+    "Verify tab switching updates aria-selected and panel visibility",
+    "Confirm analyticsLog entries are created for each interaction"
+  ]
+}

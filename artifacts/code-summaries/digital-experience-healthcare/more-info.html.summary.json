@@ -1,0 +1,71 @@
+{
+  "file_path": "digital-experience-healthcare/more-info.html",
+  "language": "HTML",
+  "overview": "The 'More Information' page of Digital Experience Healthcare provides interactive search, filter, sort, FAQ accordion, and tabbed content for exploring healthcare services. It includes accessibility features, dynamic content placeholders, and navigation elements.",
+  "key_components": [
+    "Sticky navigation bar with theme toggle",
+    "Hero section introducing services",
+    "Search, filter, and sort controls",
+    "Services grid with skeleton loaders and no-results state",
+    "FAQ accordion with expandable panels",
+    "Tabbed content section for additional information"
+  ],
+  "interactions": [
+    "Search input updates service results dynamically",
+    "Filter chips toggle specialty filters",
+    "Sort dropdown reorders service cards",
+    "FAQ buttons expand/collapse panels with aria-expanded state changes",
+    "Theme toggle switches between light/dark mode",
+    "Skip-to-content link focuses main content"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-info.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='search-input']",
+    "[data-testid='filter-chip']",
+    "[data-testid='sort-dropdown']",
+    "[data-testid='skeleton-loader']",
+    "#no-results",
+    "[data-testid='faq-button']",
+    "[data-testid='faq-panel']",
+    "[data-testid='tab-button']"
+  ],
+  "data_flow": [
+    "User input in search field triggers filtering of service cards",
+    "Filter chip clicks modify displayed services via data-filter attributes",
+    "Sort dropdown changes order of service cards",
+    "FAQ button toggles hidden state of corresponding panel",
+    "Theme toggle updates global UI theme preference"
+  ],
+  "accessibility": [
+    "Skip-to-content link for keyboard navigation",
+    "ARIA roles for navigation, group, region, and tablist",
+    "aria-expanded and aria-controls for FAQ and tab interactions",
+    "Visually hidden labels for search and tab headings",
+    "Keyboard focusable buttons and links"
+  ],
+  "analytics": [
+    "Track search input usage and query terms",
+    "Monitor filter chip selections",
+    "Capture sort option changes",
+    "Log FAQ expand/collapse events",
+    "Record theme toggle interactions",
+    "Page view and navigation link clicks"
+  ],
+  "test_ideas": [
+    "Verify search filters services correctly and hides no-results when matches exist",
+    "Ensure filter chips toggle active state and update displayed services",
+    "Validate sort dropdown reorders services alphabetically and by popularity",
+    "Check FAQ accordion expands one panel at a time and updates aria-expanded",
+    "Confirm theme toggle persists preference across reloads",
+    "Test skip-to-content link moves focus to main content",
+    "Ensure skeleton loaders are replaced by actual service cards after data load",
+    "Validate accessibility attributes and keyboard navigation for all interactive elements"
+  ]
+}

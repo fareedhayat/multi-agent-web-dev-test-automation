@@ -1,0 +1,75 @@
+{
+  "file_path": "digital-experience-healthcare/contact.html",
+  "language": "HTML",
+  "overview": "Contact page for Digital Experience Healthcare providing contact information, a validated contact form, success/error banners, and accessibility features for user communication.",
+  "key_components": [
+    "Navbar with theme toggle and navigation links",
+    "Hero section with title and subtitle",
+    "Success and error banners with dismiss buttons",
+    "Contact information panel",
+    "Contact form with validation and submit button",
+    "Help section with emergency and support options",
+    "Footer with quick links and contact details"
+  ],
+  "interactions": [
+    "Theme toggle button switches between light and dark modes",
+    "Form input validation for required fields (name, email, message)",
+    "Submit button enabled only when form is valid",
+    "Success banner displayed on successful submission",
+    "Error banner displayed on failed submission",
+    "Dismiss buttons hide banners",
+    "Skip link jumps to main content"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-info.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='contact-form']",
+    "[data-testid='input-name']",
+    "[data-testid='input-email']",
+    "[data-testid='input-phone']",
+    "[data-testid='input-message']",
+    "[data-testid='submit-button']",
+    "[data-testid='success-banner']",
+    "[data-testid='error-banner']",
+    "[data-testid='validation-message']",
+    "[data-testid='loading-spinner']",
+    "[data-testid='skip-to-content']"
+  ],
+  "data_flow": [
+    "User inputs captured in form fields",
+    "Client-side validation updates validation-message spans",
+    "Submit triggers async request (implied) to backend endpoint",
+    "Response toggles visibility of success or error banners",
+    "Form reset or disabled state managed post-submission"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA roles and live regions on banners and validation messages",
+    "aria-required and aria-describedby attributes on form inputs",
+    "aria-labels on buttons and icons",
+    "Semantic headings and landmarks (nav, main, footer)"
+  ],
+  "analytics": [
+    "Track theme toggle usage",
+    "Track form submission success and failure events",
+    "Track banner dismiss actions",
+    "Track navigation link clicks"
+  ],
+  "test_ideas": [
+    "Verify skip link focuses main content",
+    "Validate required field errors appear and clear correctly",
+    "Ensure submit button enables only when all required fields valid",
+    "Simulate successful submission and confirm success banner visible",
+    "Simulate failed submission and confirm error banner visible",
+    "Check dismiss buttons hide banners and restore focus",
+    "Verify theme toggle persists state across reloads",
+    "Confirm ARIA attributes and roles meet accessibility standards",
+    "Validate navigation links route correctly",
+    "Ensure analytics events fire on key interactions"
+  ]
+}

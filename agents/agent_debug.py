@@ -5,7 +5,8 @@ import logging
 import os
 from typing import Any, Iterable, Sequence
 
-from agent_framework import AgentRunResponse, AgentRunResponseUpdate
+# Optional: agent_framework rich types may not be present in all installs.
+# Avoid importing them so this utility remains functional with lean environments.
 
 _DEBUG_ENV_VALUES = {"1", "true", "yes", "on"}
 
@@ -89,12 +90,12 @@ def log_agent_response_metadata(
 
 def log_agent_stream_metadata(
     agent_label: str,
-    updates: Sequence[AgentRunResponseUpdate] | Iterable[AgentRunResponseUpdate] | None,
+    updates: Sequence[Any] | Iterable[Any] | None,
     *,
     logger: logging.Logger,
     force: bool = False,
 ) -> None:
-    """Summarize streaming updates by converting them into a full response."""
+    """Best-effort summary of streaming updates without requiring agent_framework types."""
     if not (force or _debug_metadata_enabled()):
         return
 
@@ -102,14 +103,26 @@ def log_agent_stream_metadata(
         logger.info("[%s] No streaming updates captured; skipping metadata log.", agent_label)
         return
 
-    try:
-        response = AgentRunResponse.from_agent_run_response_updates(list(updates))
-    except Exception as exc:
-        logger.info(
-            "[%s] Unable to materialize streaming updates for metadata logging: %s",
-            agent_label,
-            exc,
-        )
-        return
+    total = 0
+    text_len = 0
+    last_finish_reason = None
+    tool_calls = 0
+    for upd in updates:
+        total += 1
+        txt = getattr(upd, "text", None)
+        if isinstance(txt, str):
+            text_len += len(txt)
+        fr = getattr(upd, "finish_reason", None)
+        if fr:
+            last_finish_reason = fr
+        # Heuristic: some update types may carry a 'tool_name' or 'tool_call' attribute
+        if getattr(upd, "tool_name", None) or getattr(upd, "tool_call", None):
+            tool_calls += 1
 
-    log_agent_response_metadata(agent_label, response, logger=logger)
+    summary = {
+        "updates_count": total,
+        "total_text_chars": text_len,
+        "last_finish_reason": _stringify(last_finish_reason),
+        "tool_calls_detected": tool_calls,
+    }
+    logger.info("[%s] Stream summary: %s", agent_label, json.dumps(summary, default=str))

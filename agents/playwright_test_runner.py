@@ -6,10 +6,13 @@ import argparse
 import asyncio
 import contextlib
 import logging
+import socket
 import os
 import re
 import subprocess
 import time
+import sys
+import shutil
 from pathlib import Path
 from collections import OrderedDict
 from typing import Annotated, Any, Dict, Optional
@@ -44,15 +47,131 @@ SERVER_CHECK_INTERVAL = 0.5
 LOGGER = logging.getLogger("playwright_test_runner")
 
 
+# def create_playwright_mcp_tool() -> MCPStdioTool:
+#     """Instantiate the Playwright MCP tool using the same configuration as other agents."""
+#     return MCPStdioTool(
+#         name="Playwright MCP",
+#         description="Runs Playwright MCP Tools.",
+#         command="npx",
+#         args=["-y", "@playwright/mcp@latest"],
+#     )
+# def create_playwright_mcp_tool() -> MCPStdioTool:
+#     """Instantiate the Playwright MCP tool using the same configuration as other agents."""
+#     return MCPStdioTool(
+#         name="selenium",
+#         description="Runs Playwright MCP Tools.",
+#         command="python",
+#         args=["-m", "mcp_server_selenium", "--port", "9222", "--user_data_dir", "artifacts\chrome-debug"],
+#     )
 def create_playwright_mcp_tool() -> MCPStdioTool:
-    """Instantiate the Playwright MCP tool using the same configuration as other agents."""
+    """Instantiate the Selenium MCP tool using the packaged executable."""
+
+    mcp_exe = PROJECT_ROOT / ".venv" / "Scripts" / "selenium-mcp-server.exe"
+    if not mcp_exe.exists():
+        raise FileNotFoundError(
+            f"Expected Selenium MCP server at {mcp_exe}. Install selenium-mcp-server in the virtualenv."
+        )
+
+    profile_dir = PROJECT_ROOT / "artifacts" / "chrome-debug"
+    profile_dir.mkdir(parents=True, exist_ok=True)
+
+    port = int(os.getenv("SELENIUM_MCP_DEBUG_PORT", "9222"))
+
+    _start_chrome_remote_debug(port, profile_dir)
+
+    driver_name = os.getenv("SELENIUM_MCP_DRIVER", "normal_chromedriver")
+    driver_path = os.getenv("SELENIUM_MCP_DRIVER_PATH")
+
+    if not driver_path:
+        bundled_driver = PROJECT_ROOT / "drivers" / "chromedriver-win64" / "chromedriver.exe"
+        if bundled_driver.exists():
+            driver_path = str(bundled_driver)
+
+    env_vars = os.environ.copy()
+
+    if driver_path:
+        driver_file = Path(driver_path)
+        if driver_file.exists():
+            driver_file = driver_file.resolve()
+            driver_dir = str(driver_file.parent)
+            current_path = env_vars.get("PATH", "")
+            path_parts = current_path.split(os.pathsep) if current_path else []
+            if driver_dir not in path_parts:
+                env_vars["PATH"] = (
+                    os.pathsep.join([driver_dir, current_path]) if current_path else driver_dir
+                )
+            env_vars["CHROMEDRIVER"] = str(driver_file)
+            env_vars["SELENIUM_MCP_DRIVER_PATH"] = str(driver_file)
+        else:
+            LOGGER.warning("SELENIUM_MCP_DRIVER_PATH does not exist: %s", driver_path)
+
+    args = [
+        "--port",
+        str(port),
+        "--user_data_dir",
+        str(profile_dir),
+        "--driver",
+        driver_name,
+    ]
+
     return MCPStdioTool(
-        name="Playwright MCP",
-        description="Runs Playwright MCP Tools.",
-        command="npx",
-        args=["-y", "@playwright/mcp@latest"],
+        name="selenium",
+        description="Runs Selenium MCP Tools.",
+        command=str(mcp_exe),
+        args=args,
+        env=env_vars,
     )
 
+def _is_port_open(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(1)
+        return sock.connect_ex(("127.0.0.1", port)) == 0
+
+
+def _start_chrome_remote_debug(port: int, profile_dir: Path) -> None:
+    if sys.platform != "win32":  # existing Linux logic already handles non-Windows
+        return
+    if _is_port_open(port):
+        return
+
+    profile_dir.mkdir(parents=True, exist_ok=True)
+
+    chrome_path = os.getenv(
+        "SELENIUM_MCP_CHROME_PATH",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    )
+    chrome_executable = Path(chrome_path)
+    if not chrome_executable.exists():
+        fallback = shutil.which("chrome.exe")
+        if not fallback:
+            LOGGER.warning("Chrome executable not found; start it manually for Selenium MCP.")
+            return
+        chrome_executable = Path(fallback)
+
+    try:
+        subprocess.Popen(
+            [
+                str(chrome_executable),
+                f"--remote-debugging-port={port}",
+                f"--user-data-dir={profile_dir}",
+                "--profile-directory=Default",
+                "--no-first-run",
+                "--no-default-browser-check",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        for _ in range(10):
+            if _is_port_open(port):
+                break
+            time.sleep(1)
+        else:
+            LOGGER.warning(
+                "Chrome launched but remote debugging port %s did not open; Selenium MCP may retry with its own launcher.",
+                port,
+            )
+    except Exception as exc:
+        LOGGER.warning("Failed to launch Chrome for Selenium MCP: %s", exc)
 
 def read_test_plan(plan_path: Path) -> str:
     """Load the generated Playwright test plan from disk."""

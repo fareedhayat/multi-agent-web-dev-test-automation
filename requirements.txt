@@ -1,2 +1,5 @@
 agent-framework-azure-ai
+anthropic
 python-dotenv
+pydantic
+agent-framework-anthropic

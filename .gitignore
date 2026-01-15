@@ -1,4 +1,6 @@
 playwright-mcp
+chrome-debug
+drivers
 
 # Ignore Python cache and temporary files
 __pycache__/

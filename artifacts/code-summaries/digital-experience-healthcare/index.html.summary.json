@@ -1,0 +1,64 @@
+{
+  "file_path": "digital-experience-healthcare/index.html",
+  "language": "HTML",
+  "overview": "A static healthcare landing page with navigation, hero, introduction, call-to-action, and footer sections. Includes accessibility features, theme toggle, and navigation links to other pages.",
+  "key_components": [
+    "Skip to content link",
+    "Sticky navigation bar with brand and links",
+    "Theme toggle button",
+    "Hero section with heading and SVG illustration",
+    "Introduction section with three feature cards",
+    "Call-to-action section with service and contact buttons",
+    "Footer with quick links and contact info",
+    "Back-to-top button"
+  ],
+  "interactions": [
+    "Click theme toggle to switch dark/light mode",
+    "Click navigation links to navigate between pages",
+    "Click CTA buttons to go to More Info or Contact pages",
+    "Click back-to-top button to scroll to top",
+    "Skip to content link focuses main content"
+  ],
+  "routes": [
+    "./index.html",
+    "./more-info.html",
+    "./contact.html"
+  ],
+  "selectors": [
+    "[data-testid='skip-to-content']",
+    "[data-testid='navbar']",
+    "[data-testid='theme-toggle']",
+    "[data-testid='main-content']",
+    "[data-testid='cta-services']",
+    "[data-testid='cta-contact']",
+    "[data-testid='back-to-top']"
+  ],
+  "data_flow": [
+    "Static HTML content rendered directly in browser",
+    "Theme toggle likely updates CSS variables or body class via main.js",
+    "Navigation and CTA links trigger full page reloads to other static routes",
+    "Back-to-top button visibility toggled based on scroll position"
+  ],
+  "accessibility": [
+    "Skip link for keyboard navigation",
+    "ARIA labels on navigation, theme toggle, and hero image",
+    "Semantic headings and landmarks (header, main, footer)",
+    "Keyboard focusable buttons and links",
+    "Color contrast and aria-pressed state for theme toggle"
+  ],
+  "analytics": [
+    "Potential click tracking on theme toggle, CTA buttons, and navigation links",
+    "Scroll or visibility tracking for back-to-top button",
+    "Page view tracking per route"
+  ],
+  "test_ideas": [
+    "Verify skip-to-content link focuses #main-content",
+    "Validate navbar links navigate to correct routes",
+    "Check theme toggle updates aria-pressed and visual theme",
+    "Ensure CTA buttons navigate correctly",
+    "Confirm back-to-top button appears after scrolling and scrolls to top when clicked",
+    "Validate all interactive elements are keyboard accessible",
+    "Check presence of meta description and correct title",
+    "Verify footer contact links (tel/mailto) open appropriate handlers"
+  ]
+}

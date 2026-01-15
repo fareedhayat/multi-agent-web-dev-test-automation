@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore our comprehensive healthcare services, insurance options, and locations. Search, filter, and find the care you need with Digital Experience Healthcare.">
+  <title>More Information | Digital Experience Healthcare</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-to-content" data-testid="skip-to-content">Skip to content</a>
+
+  <!-- Sticky Navigation Bar -->
+  <nav class="navbar" data-testid="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-container">
+      <a href="./index.html" class="navbar-brand">
+        <span class="brand-icon" aria-hidden="true">🏥</span>
+        <span class="brand-name">Digital Experience</span>
+      </a>
+      <ul class="navbar-menu">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./more-info.html" class="active" aria-current="page">More Information</a></li>
+        <li><a href="./contact.html">Contact Us</a></li>
+      </ul>
+      <button type="button" class="theme-toggle" data-testid="theme-toggle" aria-label="Toggle dark mode">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main-content" data-testid="main-content">
+    <!-- Hero Section -->
+    <section class="hero hero-secondary">
+      <div class="container">
+        <h1>Explore Our Services</h1>
+        <p class="hero-subtitle">Find the healthcare solutions that fit your needs. Search, filter, and discover comprehensive care options.</p>
+      </div>
+    </section>
+
+    <!-- Search, Filter, and Sort Section -->
+    <section class="services-controls" aria-label="Service search and filters">
+      <div class="container">
+        <!-- Search Bar -->
+        <div class="search-wrapper">
+          <label for="search-input" class="visually-hidden">Search services</label>
+          <input 
+            type="search" 
+            id="search-input" 
+            class="search-input" 
+            data-testid="search-input"
+            placeholder="Search services by name or description..."
+            aria-label="Search services"
+            autocomplete="off"
+          >
+          <span class="search-icon" aria-hidden="true">🔍</span>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-section">
+          <h2 class="filter-label">Filter by specialty:</h2>
+          <div class="filter-chips" role="group" aria-label="Service specialty filters">
+            <button type="button" class="filter-chip" data-testid="filter-chip" data-filter="primary-care">
+              <span class="chip-label">Primary Care</span>
+              <span class="chip-icon" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip" data-filter="pediatrics">
+              <span class="chip-label">Pediatrics</span>
+              <span class="chip-icon" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip" data-filter="dental">
+              <span class="chip-label">Dental</span>
+              <span class="chip-icon" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip" data-filter="cardiology">
+              <span class="chip-label">Cardiology</span>
+              <span class="chip-icon" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip" data-filter="orthopedics">
+              <span class="chip-label">Orthopedics</span>
+              <span class="chip-icon" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="filter-chip" data-testid="filter-chip" data-filter="mental-health">
+              <span class="chip-label">Mental Health</span>
+              <span class="chip-icon" aria-hidden="true">✓</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sort Dropdown -->
+        <div class="sort-section">
+          <label for="sort-dropdown" class="sort-label">Sort by:</label>
+          <select id="sort-dropdown" class="sort-dropdown" data-testid="sort-dropdown">
+            <option value="alphabetical">Alphabetical (A-Z)</option>
+            <option value="popularity">Popularity</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Service Cards Grid -->
+    <section class="services-grid" aria-label="Healthcare services">
+      <div class="container">
+        <div class="cards-grid" id="services-container">
+          <!-- Skeleton Loaders (replaced by JS) -->
+          <div class="service-card skeleton" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+          <div class="service-card skeleton" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+          <div class="service-card skeleton" data-testid="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+        </div>
+        <div class="no-results" id="no-results" hidden>
+          <p>No services match your search criteria. Try adjusting your filters or search terms.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Accordion -->
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <div class="container">
+        <h2 id="faq-heading">Frequently Asked Questions</h2>
+        <div class="faq-accordion">
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-1"
+                id="faq-button-1"
+              >
+                <span class="faq-question">What insurance plans do you accept?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              id="faq-panel-1" 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              role="region"
+              aria-labelledby="faq-button-1"
+              hidden
+            >
+              <p>We accept most major insurance plans including Blue Cross Blue Shield, Aetna, UnitedHealthcare, Cigna, and Medicare. Please contact our billing department to verify your specific plan coverage.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-2"
+                id="faq-button-2"
+              >
+                <span class="faq-question">How do I schedule an appointment?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              id="faq-panel-2" 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              role="region"
+              aria-labelledby="faq-button-2"
+              hidden
+            >
+              <p>You can schedule an appointment by calling our main line at (555) 123-4567, using our online patient portal, or visiting any of our locations in person. Same-day appointments are often available for urgent care needs.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-3"
+                id="faq-button-3"
+              >
+                <span class="faq-question">Do you offer telehealth services?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              id="faq-panel-3" 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              role="region"
+              aria-labelledby="faq-button-3"
+              hidden
+            >
+              <p>Yes! We offer secure video consultations for many types of appointments. Telehealth visits are available for primary care, mental health counseling, follow-up appointments, and certain specialist consultations.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-4"
+                id="faq-button-4"
+              >
+                <span class="faq-question">What are your hours of operation?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              id="faq-panel-4" 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              role="region"
+              aria-labelledby="faq-button-4"
+              hidden
+            >
+              <p>Our main clinic is open Monday through Friday from 7:00 AM to 7:00 PM, and Saturday from 8:00 AM to 4:00 PM. Our urgent care center is open seven days a week from 8:00 AM to 8:00 PM. Emergency services are available 24/7.</p>
+            </div>
+          </div>
+
+          <div class="faq-item" data-testid="faq-item">
+            <h3>
+              <button 
+                type="button" 
+                class="faq-button" 
+                data-testid="faq-button"
+                aria-expanded="false"
+                aria-controls="faq-panel-5"
+                id="faq-button-5"
+              >
+                <span class="faq-question">Can I access my medical records online?</span>
+                <span class="faq-icon" aria-hidden="true">+</span>
+              </button>
+            </h3>
+            <div 
+              id="faq-panel-5" 
+              class="faq-panel" 
+              data-testid="faq-panel"
+              role="region"
+              aria-labelledby="faq-button-5"
+              hidden
+            >
+              <p>Absolutely. Our secure patient portal allows you to view test results, review visit summaries, request prescription refills, message your care team, and download your medical records 24/7 from any device.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabbed Content Section -->
+    <section class="tabbed-section" aria-labelledby="tabs-heading">
+      <div class="container">
+        <h2 id="tabs-heading" class="visually-hidden">Additional Information</h2>
+        <div class="tabs-wrapper">
+          <div class="tabs-list" role="tablist" aria-label="Information categories">
+            <button 
+              type="button" 
+              class="tab-button active" 
+              data-testid="tab-button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="tab-panel-services"
+              id="tab-services"
+              tabindex="0"
+            >
+              Services Overview
+            </button>
+            <button 
+              type="button" 
+              class="tab-button" 
+              data-testid="tab-button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="tab-panel-insurance"
+              id="tab-insurance"
+              tabindex="-1"
+            >
+              Insurance & Billing
+            </button>
+            <button 
+              type="button" 
+              class="tab-button" 
+              data-testid="tab-button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="tab-panel-locations"
+              id="tab-locations"
+              tabindex="-1"
+            >
+              Locations
+            </button>
+          </div>
+
+          <div class="tabs-content">
+            <div 
+              id="tab-panel-services" 
+              class="tab-panel active" 
+              data-testid="tab-panel"
+              role="tabpanel"
+              aria-labelledby="tab-services"
+              tabindex="0"
+            >
+              <h3>Comprehensive Healthcare Services</h3>
+              <p>Digital Experience Healthcare provides a full spectrum of medical services designed to meet the diverse needs of our community. From routine checkups to specialized care, our team of board-certified physicians and healthcare professionals is committed to delivering exceptional, patient-centered treatment.</p>
+              <ul class="info-list">
+                <li><strong>Primary Care:</strong> Annual physicals, preventive screenings, chronic disease management, and wellness counseling.</li>
+                <li><strong>Specialty Care:</strong> Cardiology, orthopedics, dermatology, gastroenterology, and more.</li>
+                <li><strong>Pediatrics:</strong> Well-child visits, immunizations, developmental assessments, and sick visits.</li>
+                <li><strong>Dental Services:</strong> Cleanings, fillings, cosmetic dentistry, and orthodontics.</li>
+                <li><strong>Mental Health:</strong> Counseling, therapy, psychiatric services, and substance abuse support.</li>
+                <li><strong>Urgent Care:</strong> Walk-in treatment for non-life-threatening conditions with minimal wait times.</li>
+              </ul>
+              <p>All services are delivered in modern, comfortable facilities equipped with the latest medical technology.</p>
+            </div>
+
+            <div 
+              id="tab-panel-insurance" 
+              class="tab-panel" 
+              data-testid="tab-panel"
+              role="tabpanel"
+              aria-labelledby="tab-insurance"
+              tabindex="0"
+              hidden
+            >
+              <h3>Insurance & Billing Information</h3>
+              <p>We work with most major insurance providers to ensure you receive the care you need with minimal out-of-pocket costs. Our billing specialists are available to help you understand your coverage and payment options.</p>
+              <h4>Accepted Insurance Plans</h4>
+              <ul class="info-list">
+                <li>Blue Cross Blue Shield (all plans)</li>
+                <li>Aetna</li>
+                <li>UnitedHealthcare / UnitedHealth</li>
+                <li>Cigna</li>
+                <li>Humana</li>
+                <li>Medicare & Medicare Advantage</li>
+                <li>Medicaid (state-specific plans)</li>
+                <li>Tricare</li>
+              </ul>
+              <h4>Payment Options</h4>
+              <p>We accept cash, checks, credit cards (Visa, MasterCard, Discover, American Express), and offer flexible payment plans for qualifying patients. Financial assistance programs are available for those who meet eligibility criteria.</p>
+              <p><strong>Questions about your coverage?</strong> Contact our billing department at (555) 123-4599 or email <a href="mailto:billing@digitalexperience.health">billing@digitalexperience.health</a>.</p>
+            </div>
+
+            <div 
+              id="tab-panel-locations" 
+              class="tab-panel" 
+              data-testid="tab-panel"
+              role="tabpanel"
+              aria-labelledby="tab-locations"
+              tabindex="0"
+              hidden
+            >
+              <h3>Our Locations</h3>
+              <p>Digital Experience Healthcare operates multiple facilities across the region to serve you better. Each location offers a welcoming environment and convenient access to care.</p>
+              
+              <div class="locations-grid">
+                <article class="location-card">
+                  <h4>Main Campus</h4>
+                  <p class="location-address">
+                    <strong>Address:</strong><br>
+                    1234 Healthcare Blvd<br>
+                    Medical City, MC 12345
+                  </p>
+                  <p><strong>Phone:</strong> (555) 123-4567</p>
+                  <p><strong>Services:</strong> Full-service hospital, emergency care, specialty clinics, imaging center</p>
+                </article>
+
+                <article class="location-card">
+                  <h4>Northside Clinic</h4>
+                  <p class="location-address">
+                    <strong>Address:</strong><br>
+                    5678 Wellness Way<br>
+                    Northtown, MC 12346
+                  </p>
+                  <p><strong>Phone:</strong> (555) 123-4568</p>
+                  <p><strong>Services:</strong> Primary care, pediatrics, lab services, pharmacy</p>
+                </article>
+
+                <article class="location-card">
+                  <h4>Southside Urgent Care</h4>
+                  <p class="location-address">
+                    <strong>Address:</strong><br>
+                    9101 Care Circle<br>
+                    Southville, MC 12347
+                  </p>
+                  <p><strong>Phone:</strong> (555) 123-4569</p>
+                  <p><strong>Services:</strong> Urgent care, X-ray, minor procedures, occupational health</p>
+                </article>
+              </div>
+
+              <div class="map-container">
+                <img 
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Crect fill='%23e0e0e0' width='800' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23666'%3EMap Placeholder - Locations Overview%3C/text%3E%3Ccircle cx='200' cy='150' r='8' fill='%23d32f2f'/%3E%3Ccircle cx='500' cy='120' r='8' fill='%23d32f2f'/%3E%3Ccircle cx='600' cy='280' r='8' fill='%23d32f2f'/%3E%3C/svg%3E" 
+                  alt="Map showing Digital Experience Healthcare locations"
+                  class="location-map"
+                  loading="lazy"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+      <div class="container">
+        <h2>Ready to Get Started?</h2>
+        <p>Contact us today to schedule your appointment or learn more about our services.</p>
+        <a href="./contact.html" class="btn btn-primary" data-testid="cta-contact">Contact Us</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Digital Experience Healthcare</h3>
+          <p>Providing compassionate, comprehensive care to our community since 2010.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="./index.html">Home</a></li>
+            <li><a href="./more-info.html">More Information</a></li>
+            <li><a href="./contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>
+            1234 Healthcare Blvd<br>
+            Medical City, MC 12345<br>
+            Phone: (555) 123-4567<br>
+            Email: <a href="mailto:info@digitalexperience.health">info@digitalexperience.health</a>
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Digital Experience Healthcare. All rights reserved. | <em>Placeholder content for demonstration purposes only.</em></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button type="button" class="back-to-top" data-testid="back-to-top" aria-label="Back to top" hidden>
+    <span aria-hidden="true">↑</span>
+  </button>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Debug Panel (toggle with Ctrl+Shift+D) -->
+  <aside class="debug-panel" data-testid="debug-panel" hidden>
+    <div class="debug-header">
+      <h3>Analytics Debug Panel</h3>
+      <button type="button" class="debug-close" aria-label="Close debug panel">×</button>
+    </div>
+    <div class="debug-content">
+      <p class="debug-info">Recent events:</p>
+      <ul class="debug-log" id="debug-log"></ul>
+    </div>
+  </aside>
+
+  <!-- Scripts -->
+  <script src="./main.js"></script>
+  <script src="./more-info.js"></script>
+</body>
+</html>

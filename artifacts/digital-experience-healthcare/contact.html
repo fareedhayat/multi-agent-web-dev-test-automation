@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact Digital Experience Healthcare. Get in touch with our team for appointments, inquiries, or support. We're here to help with all your healthcare needs.">
+  <title>Contact Us | Digital Experience Healthcare</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+  <!-- Skip to main content link for accessibility -->
+  <a href="#main-content" class="skip-link" data-testid="skip-to-content">Skip to main content</a>
+
+  <!-- Sticky Navigation Bar -->
+  <nav class="navbar" data-testid="navbar" aria-label="Main navigation">
+    <div class="navbar-container">
+      <a href="./index.html" class="navbar-brand">
+        <span class="brand-icon" aria-hidden="true">🏥</span>
+        <span class="brand-name">Digital Experience</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="./index.html" class="navbar-link">Home</a></li>
+        <li><a href="./more-info.html" class="navbar-link">More Information</a></li>
+        <li><a href="./contact.html" class="navbar-link active" aria-current="page">Contact Us</a></li>
+      </ul>
+
+      <button 
+        type="button" 
+        class="theme-toggle" 
+        data-testid="theme-toggle"
+        aria-label="Toggle dark mode"
+        title="Toggle theme">
+        <span class="theme-icon theme-icon-light" aria-hidden="true">☀️</span>
+        <span class="theme-icon theme-icon-dark" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main-content" data-testid="main-content">
+    
+    <!-- Hero Section -->
+    <section class="hero hero-contact">
+      <div class="hero-content">
+        <h1 class="hero-title">Get in Touch</h1>
+        <p class="hero-subtitle">We're here to answer your questions and help you access the care you need. Reach out to our team today.</p>
+      </div>
+    </section>
+
+    <!-- Success Banner (hidden by default) -->
+    <div 
+      id="success-banner" 
+      class="banner banner-success" 
+      data-testid="success-banner" 
+      role="alert" 
+      aria-live="polite"
+      hidden>
+      <div class="banner-content">
+        <span class="banner-icon" aria-hidden="true">✓</span>
+        <div class="banner-text">
+          <strong>Message sent successfully!</strong>
+          <p>Thank you for contacting us. We'll get back to you within 24 hours.</p>
+        </div>
+        <button type="button" class="banner-close" aria-label="Dismiss success message">×</button>
+      </div>
+    </div>
+
+    <!-- Error Banner (hidden by default) -->
+    <div 
+      id="error-banner" 
+      class="banner banner-error" 
+      data-testid="error-banner" 
+      role="alert" 
+      aria-live="assertive"
+      hidden>
+      <div class="banner-content">
+        <span class="banner-icon" aria-hidden="true">⚠</span>
+        <div class="banner-text">
+          <strong>Unable to send message</strong>
+          <p>Please check your information and try again. If the problem persists, call us at (555) 123-4567.</p>
+        </div>
+        <button type="button" class="banner-close" aria-label="Dismiss error message">×</button>
+      </div>
+    </div>
+
+    <!-- Contact Form Section -->
+    <section class="contact-section">
+      <div class="container">
+        <div class="contact-grid">
+          
+          <!-- Contact Information -->
+          <div class="contact-info">
+            <h2>Contact Information</h2>
+            <p class="contact-intro">Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+            
+            <div class="contact-details">
+              <div class="contact-detail-item">
+                <span class="contact-icon" aria-hidden="true">📍</span>
+                <div>
+                  <h3>Visit Us</h3>
+                  <p>123 Healthcare Boulevard<br>Medical District, CA 90210</p>
+                </div>
+              </div>
+
+              <div class="contact-detail-item">
+                <span class="contact-icon" aria-hidden="true">📞</span>
+                <div>
+                  <h3>Call Us</h3>
+                  <p><a href="tel:+15551234567">(555) 123-4567</a><br>Mon–Fri, 8:00 AM – 6:00 PM PT</p>
+                </div>
+              </div>
+
+              <div class="contact-detail-item">
+                <span class="contact-icon" aria-hidden="true">✉️</span>
+                <div>
+                  <h3>Email Us</h3>
+                  <p><a href="mailto:info@digitalexperience.health">info@digitalexperience.health</a></p>
+                </div>
+              </div>
+
+              <div class="contact-detail-item">
+                <span class="contact-icon" aria-hidden="true">🕐</span>
+                <div>
+                  <h3>Office Hours</h3>
+                  <p>Monday – Friday: 8:00 AM – 6:00 PM<br>Saturday: 9:00 AM – 2:00 PM<br>Sunday: Closed</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <div class="contact-form-wrapper">
+            <form 
+              id="contact-form" 
+              class="contact-form" 
+              data-testid="contact-form" 
+              novalidate
+              aria-label="Contact form">
+              
+              <h2>Send Us a Message</h2>
+              
+              <!-- Full Name Field -->
+              <div class="form-group">
+                <label for="input-name" class="form-label">
+                  Full Name <span class="required" aria-label="required">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="input-name" 
+                  name="name"
+                  class="form-input" 
+                  data-testid="input-name"
+                  required
+                  aria-required="true"
+                  aria-describedby="name-error"
+                  autocomplete="name">
+                <span 
+                  id="name-error" 
+                  class="validation-message" 
+                  data-testid="validation-message"
+                  role="alert"
+                  aria-live="polite"></span>
+              </div>
+
+              <!-- Email Field -->
+              <div class="form-group">
+                <label for="input-email" class="form-label">
+                  Email Address <span class="required" aria-label="required">*</span>
+                </label>
+                <input 
+                  type="email" 
+                  id="input-email" 
+                  name="email"
+                  class="form-input" 
+                  data-testid="input-email"
+                  required
+                  aria-required="true"
+                  aria-describedby="email-error"
+                  autocomplete="email">
+                <span 
+                  id="email-error" 
+                  class="validation-message" 
+                  data-testid="validation-message"
+                  role="alert"
+                  aria-live="polite"></span>
+              </div>
+
+              <!-- Phone Field -->
+              <div class="form-group">
+                <label for="input-phone" class="form-label">
+                  Phone Number <span class="optional">(optional)</span>
+                </label>
+                <input 
+                  type="tel" 
+                  id="input-phone" 
+                  name="phone"
+                  class="form-input" 
+                  data-testid="input-phone"
+                  placeholder="(555) 123-4567"
+                  aria-describedby="phone-error"
+                  autocomplete="tel">
+                <span 
+                  id="phone-error" 
+                  class="validation-message" 
+                  data-testid="validation-message"
+                  role="alert"
+                  aria-live="polite"></span>
+              </div>
+
+              <!-- Message Field -->
+              <div class="form-group">
+                <label for="input-message" class="form-label">
+                  Message <span class="required" aria-label="required">*</span>
+                </label>
+                <textarea 
+                  id="input-message" 
+                  name="message"
+                  class="form-textarea" 
+                  data-testid="input-message"
+                  rows="6"
+                  required
+                  aria-required="true"
+                  aria-describedby="message-error message-hint"
+                  minlength="20"
+                  maxlength="1000"></textarea>
+                <span id="message-hint" class="form-hint">20–1000 characters</span>
+                <span 
+                  id="message-error" 
+                  class="validation-message" 
+                  data-testid="validation-message"
+                  role="alert"
+                  aria-live="polite"></span>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="form-actions">
+                <button 
+                  type="submit" 
+                  id="submit-button"
+                  class="btn btn-primary" 
+                  data-testid="submit-button"
+                  disabled
+                  aria-disabled="true">
+                  <span class="btn-text">Send Message</span>
+                  <span class="loading-spinner" data-testid="loading-spinner" hidden aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <p class="form-footer">
+                <span class="required" aria-hidden="true">*</span> Required fields
+              </p>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Additional Help Section -->
+    <section class="help-section">
+      <div class="container">
+        <h2>Need Immediate Assistance?</h2>
+        <div class="help-grid">
+          <div class="help-card">
+            <span class="help-icon" aria-hidden="true">🚨</span>
+            <h3>Emergency Care</h3>
+            <p>For life-threatening emergencies, call 911 or visit your nearest emergency room immediately.</p>
+          </div>
+          <div class="help-card">
+            <span class="help-icon" aria-hidden="true">💬</span>
+            <h3>Live Chat</h3>
+            <p>Chat with our support team Monday–Friday, 8 AM–6 PM PT for quick answers to common questions.</p>
+          </div>
+          <div class="help-card">
+            <span class="help-icon" aria-hidden="true">📅</span>
+            <h3>Schedule Appointment</h3>
+            <p>Book your next visit online or call us at <a href="tel:+15551234567">(555) 123-4567</a> to speak with our scheduling team.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Digital Experience Healthcare</h3>
+          <p>Providing compassionate, comprehensive care to our community since 2010.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="./index.html">Home</a></li>
+            <li><a href="./more-info.html">Services</a></li>
+            <li><a href="./contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>123 Healthcare Boulevard<br>Medical District, CA 90210<br><a href="tel:+15551234567">(555) 123-4567</a></p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Digital Experience Healthcare. All rights reserved. <span class="placeholder-notice">Placeholder content for demonstration purposes only.</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button 
+    type="button" 
+    class="back-to-top" 
+    data-testid="back-to-top"
+    aria-label="Back to top"
+    hidden>
+    <span aria-hidden="true">↑</span>
+  </button>
+
+  <!-- Toast Notification Container -->
+  <div 
+    id="toast-container" 
+    class="toast-container" 
+    aria-live="polite" 
+    aria-atomic="true">
+  </div>
+
+  <!-- Scripts -->
+  <script src="./main.js"></script>
+  <script src="./contact.js"></script>
+</body>
+</html>
