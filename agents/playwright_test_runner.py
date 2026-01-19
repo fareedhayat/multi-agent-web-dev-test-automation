@@ -28,6 +28,11 @@ try:
 except ImportError:
     from agent_debug import log_agent_stream_metadata
 
+try:
+    from .agent_metrics import AgentRunMetricsCollector, dump_metrics_to_file
+except ImportError:
+    from agent_metrics import AgentRunMetricsCollector, dump_metrics_to_file
+
 load_dotenv()
 
 ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
@@ -509,6 +514,17 @@ async def run_playwright_test_agent(
 
     plan_markdown = read_test_plan(plan_path)
     suite_sections = split_plan_into_suites(plan_markdown)
+    suite_total = len(suite_sections) if suite_sections else 1
+    try:
+        relative_plan = plan_path.relative_to(PROJECT_ROOT)
+        plan_display_path = relative_plan.as_posix()
+    except ValueError:
+        plan_display_path = plan_path.as_posix()
+    metrics_collector = AgentRunMetricsCollector(
+        plan_path=plan_display_path,
+        base_url=base_url,
+        suite_total=suite_total,
+    )
     prompt = build_execution_prompt(plan_markdown, base_url)
 
     server_process: Optional[subprocess.Popen[str]] = None
@@ -543,6 +559,7 @@ async def run_playwright_test_agent(
     resolved_log = log_target if log_target.is_absolute() else (PROJECT_ROOT / log_target).resolve()
     resolved_log.parent.mkdir(parents=True, exist_ok=True)
     log_file_handle = resolved_log.open("w", encoding="utf-8")
+    metrics_path = resolved_log.with_suffix(".metrics.json")
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     log_file_handle.write(f"# Playwright Test Run\nStarted: {timestamp}\nPlan: {plan_path}\n\n")
 
@@ -554,6 +571,9 @@ async def run_playwright_test_agent(
     }
 
     context_manager = client.create_agent(max_output_tokens=60000, **agent_kwargs)
+
+    metrics_data: dict[str, Any] | None = None
+    metrics_error: Exception | None = None
 
     try:
         async with context_manager as agent:
@@ -578,15 +598,22 @@ async def run_playwright_test_agent(
                     )
                 thread = agent.get_new_thread()
                 suite_updates: list[Any] = []
-                async for chunk in agent.run_stream(suite_prompt, thread=thread):
-                    suite_updates.append(chunk)
-                    if chunk.text:
-                        transcript.append(chunk.text)
-                        log_file_handle.write(chunk.text)
-                        log_file_handle.flush()
-                        if echo:
-                            print(chunk.text, end="", flush=True)
+                metrics_collector.start_suite(suite_name, index)
+                try:
+                    async for chunk in agent.run_stream(suite_prompt, thread=thread):
+                        suite_updates.append(chunk)
+                        if chunk.text:
+                            transcript.append(chunk.text)
+                            log_file_handle.write(chunk.text)
+                            log_file_handle.flush()
+                            if echo:
+                                print(chunk.text, end="", flush=True)
+                        metrics_collector.record_update(chunk)
+                except Exception:
+                    metrics_collector.abort_active_suite()
+                    raise
                 response_updates.extend(suite_updates)
+                metrics_collector.finish_suite()
                 if suite_updates and index < len(suites_to_run):
                     transcript.append("\n")
                     log_file_handle.write("\n")
@@ -600,6 +627,10 @@ async def run_playwright_test_agent(
                 response_updates,
                 logger=LOGGER,
             )
+        metrics_data = metrics_collector.finalize_run()
+    except Exception as exc:
+        metrics_error = exc
+        metrics_collector.abort_active_suite()
     finally:
         log_file_handle.write("\n")
         log_file_handle.flush()
@@ -610,23 +641,49 @@ async def run_playwright_test_agent(
     output_text = "".join(transcript).strip()
     summary_text = summarize_execution_output(output_text, plan_markdown)
 
+    if metrics_data is None:
+        try:
+            metrics_data = metrics_collector.finalize_run()
+        except RuntimeError as exc:
+            LOGGER.warning("Unable to finalize metrics: %s", exc)
+            metrics_collector.abort_active_suite()
+            metrics_data = {
+                "run": {
+                    "plan_path": plan_display_path,
+                    "base_url": base_url,
+                    "suite_total": suite_total,
+                },
+                "suites": metrics_collector.completed_suites,
+            }
+    if metrics_error:
+        run_section = metrics_data.setdefault("run", {}) if isinstance(metrics_data, dict) else None
+        if isinstance(run_section, dict):
+            run_section.setdefault(
+                "error",
+                f"{metrics_error.__class__.__name__}: {metrics_error}",
+            )
+    dump_metrics_to_file(metrics_data, metrics_path)
+
+    if metrics_error:
+        summary_text = summary_text.rstrip() + f"\n\nRun terminated with error: {metrics_error}\n"
+
     with resolved_log.open("a", encoding="utf-8") as summary_file:
         summary_file.write("\n# Summary\n")
         summary_file.write(summary_text)
         summary_file.write("\n")
 
-    try:
-        relative_plan = plan_path.relative_to(PROJECT_ROOT)
-        plan_display_path = relative_plan.as_posix()
-    except ValueError:
-        plan_display_path = plan_path.as_posix()
-
-    return {
+    result = {
         "plan_path": plan_display_path,
         "output": output_text,
         "output_preview": output_text[:1000],
         "summary_text": summary_text,
+        "metrics_path": metrics_path.as_posix(),
     }
+    if echo:
+        print(f"\nMetrics written to: {metrics_path.as_posix()}")
+    if metrics_error:
+        raise metrics_error
+    return result
 
 
 @ai_function(
