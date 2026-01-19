@@ -268,7 +268,8 @@ class SuiteMetricRecord:
                 state.started_at = _utc_now()
             state.output_fragments.append(_safe_serialize(content.output))
             # Screenshot payload estimation
-            if (state.name or "").lower() == "take_screenshot":
+            tool_name_l = (state.name or "").lower()
+            if tool_name_l == "take_screenshot" or ("screenshot" in tool_name_l):
                 self.screenshot_calls_count += 1
                 # Prefer base64 if present; otherwise estimate from file size
                 b64_len = _extract_base64_length(content.output)
