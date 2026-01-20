@@ -1,0 +1,170 @@
+{
+  "comparisons": [
+    {
+      "name": "Playwright MCP",
+      "runtime_seconds": 2041.392397099873,
+      "suite_total": 7,
+      "input_tokens": 7689260,
+      "output_tokens": 62142,
+      "tokens_per_second": 3766.6741636364636,
+      "output_per_input": 0.008081661954466359,
+      "avg_suite_duration": 291.61475487139876,
+      "tool_calls_total": 177,
+      "tool_errors": 0,
+      "top_tools": [
+        [
+          "browser_evaluate",
+          62
+        ],
+        [
+          "browser_run_code",
+          45
+        ],
+        [
+          "browser_navigate",
+          26
+        ],
+        [
+          "browser_click",
+          15
+        ],
+        [
+          "browser_snapshot",
+          7
+        ],
+        [
+          "browser_take_screenshot",
+          5
+        ],
+        [
+          "browser_type",
+          5
+        ],
+        [
+          "browser_console_messages",
+          4
+        ],
+        [
+          "browser_wait_for",
+          4
+        ],
+        [
+          "browser_press_key",
+          2
+        ]
+      ],
+      "avg_tool_duration": 4.598817079654227
+    },
+    {
+      "name": "Selenium MCP (Angie)",
+      "runtime_seconds": 1048.605864299927,
+      "suite_total": 7,
+      "input_tokens": 2993880,
+      "output_tokens": 28881,
+      "tokens_per_second": 2855.105146678521,
+      "output_per_input": 0.009646679225620266,
+      "avg_suite_duration": 149.79528588572117,
+      "tool_calls_total": 253,
+      "tool_errors": 0,
+      "top_tools": [
+        [
+          "find_element",
+          86
+        ],
+        [
+          "click_element",
+          49
+        ],
+        [
+          "take_screenshot",
+          32
+        ],
+        [
+          "navigate",
+          24
+        ],
+        [
+          "send_keys",
+          22
+        ],
+        [
+          "get_element_text",
+          15
+        ],
+        [
+          "press_key",
+          8
+        ],
+        [
+          "start_browser",
+          7
+        ],
+        [
+          "hover",
+          7
+        ],
+        [
+          "close_session",
+          3
+        ]
+      ],
+      "avg_tool_duration": 1.5237238632373349
+    },
+    {
+      "name": "Selenium Server1",
+      "runtime_seconds": 1198.5458662998863,
+      "suite_total": 7,
+      "input_tokens": 6596424,
+      "output_tokens": 42305,
+      "tokens_per_second": 5503.689250011163,
+      "output_per_input": 0.006413323340039997,
+      "avg_suite_duration": 170.09800662858677,
+      "tool_calls_total": 251,
+      "tool_errors": 3,
+      "top_tools": [
+        [
+          "run_javascript_and_get_console_output",
+          77
+        ],
+        [
+          "check_page_ready",
+          33
+        ],
+        [
+          "run_javascript_in_console",
+          31
+        ],
+        [
+          "take_screenshot",
+          20
+        ],
+        [
+          "get_an_element",
+          20
+        ],
+        [
+          "navigate",
+          17
+        ],
+        [
+          "click_to_element",
+          15
+        ],
+        [
+          "set_value_to_input_element",
+          12
+        ],
+        [
+          "get_elements",
+          9
+        ],
+        [
+          "get_console_logs",
+          6
+        ]
+      ],
+      "avg_tool_duration": 1.553547441835081
+    }
+  ],
+  "missing": []
+}
