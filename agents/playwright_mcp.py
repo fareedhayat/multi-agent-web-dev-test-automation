@@ -35,6 +35,58 @@ try:
 except ImportError:
     from agent_metrics import AgentRunMetricsCollector, dump_metrics_to_file
 
+def _build_comparison_summary(run_metrics: dict, summary_text: str, mcp_id: str) -> dict:
+    run = run_metrics.get("run", {}) or {}
+    suites = run_metrics.get("suites", []) or []
+    usage = run.get("usage", {}) or {}
+    shots = run.get("screenshots", {}) or {}
+    # Tool schema counts
+    tool_counts: dict[str, int] = {}
+    for s in suites:
+        for tc in s.get("tool_calls", []) or []:
+            name = (tc.get("tool_name") or "").strip() or "(unknown)"
+            tool_counts[name] = tool_counts.get(name, 0) + 1
+    # Suite stats
+    suite_stats = []
+    for s in suites:
+        u = s.get("usage", {}) or {}
+        suite_stats.append({
+            "suite_index": s.get("suite_index"),
+            "suite_name": s.get("suite_name"),
+            "seconds": s.get("duration_seconds"),
+            "updates": s.get("updates_count"),
+            "text_chars": s.get("total_text_chars"),
+            "tool_calls": len(s.get("tool_calls", []) or []),
+            "input_tokens": u.get("input_token_count", 0) or 0,
+            "output_tokens": u.get("output_token_count", 0) or 0,
+        })
+    # Pass/Fail heuristics from summary_text
+    st_low = (summary_text or "").lower()
+    pass_count = st_low.count(" pass ") + st_low.count(" passed ")
+    fail_count = st_low.count(" fail ") + st_low.count(" failed ")
+    total_checks = pass_count + fail_count
+    pass_ratio = (pass_count / total_checks) if total_checks > 0 else None
+    return {
+        "mcp": mcp_id,
+        "run": {
+            "duration_seconds": run.get("duration_seconds"),
+            "suite_total": run.get("suite_total"),
+            "input_tokens": usage.get("input_token_count", 0) or 0,
+            "output_tokens": usage.get("output_token_count", 0) or 0,
+            "screenshots": {
+                "calls": shots.get("calls"),
+                "estimated_input_tokens": shots.get("estimated_input_tokens"),
+            },
+            "pass_fail": {
+                "pass": pass_count,
+                "fail": fail_count,
+                "pass_ratio": pass_ratio,
+            },
+        },
+        "tools": tool_counts,
+        "suites": suite_stats,
+    }
+
 load_dotenv()
 
 ANTHROPIC_FOUNDRY_ENDPOINT = os.getenv("ANTHROPIC_FOUNDRY_ENDPOINT")
@@ -47,7 +99,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SERVER_COMMAND = ["python", "-m", "http.server", "8000"]
 DEFAULT_SERVER_CWD = Path("artifacts") / "digital-experience-healthcare"
 DEFAULT_BASE_URL = "http://localhost:8000"
-DEFAULT_LOG_PATH = Path("artifacts") / "playwright-run.log"
+MCP_DIR = (PROJECT_ROOT / "artifacts" / "playwright_mcp").resolve()
+DEFAULT_LOG_PATH = MCP_DIR / "run.log"
+AGGREGATOR_LOG_PATH = Path("artifacts") / "mcp-comparison.log"
 SNAPSHOT_DIR = Path("artifacts") / "playwright-snapshots"
 SERVER_READY_TIMEOUT = 15
 SERVER_CHECK_INTERVAL = 0.5
@@ -589,9 +643,9 @@ async def run_playwright_test_agent(
 
     transcript = []
 
+    MCP_DIR.mkdir(parents=True, exist_ok=True)
     log_target = log_path or DEFAULT_LOG_PATH
-    resolved_log = log_target if log_target.is_absolute() else (PROJECT_ROOT / log_target).resolve()
-    resolved_log.parent.mkdir(parents=True, exist_ok=True)
+    resolved_log = log_target if log_target.is_absolute() else (MCP_DIR / log_target.name).resolve()
     log_file_handle = resolved_log.open("w", encoding="utf-8")
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     log_file_handle.write(f"# Playwright Test Run\nStarted: {timestamp}\nPlan: {plan_path}\n\n")
@@ -604,6 +658,7 @@ async def run_playwright_test_agent(
     }
 
     agent_obj = client.as_agent(**agent_kwargs, default_options={"max_tokens": 60000})
+    final_run_metrics: Optional[Dict[str, Any]] = None
 
     try:
         async with agent_obj as agent:
@@ -618,7 +673,7 @@ async def run_playwright_test_agent(
                 base_url=base_url,
                 suite_total=len(suites_to_run),
             )
-            metrics_path = resolved_log.with_name(f"{resolved_log.stem}.playwright_mcp.metrics.json")
+            metrics_path = MCP_DIR / "run.metrics.json"
             response_updates: list[Any] = []
             if echo:
                 print("Agent: ", end="", flush=True)
@@ -669,6 +724,7 @@ async def run_playwright_test_agent(
             )
             # Finalize and persist metrics
             run_metrics = metrics_collector.finalize_run()
+            final_run_metrics = run_metrics
             dump_metrics_to_file(run_metrics, metrics_path)
             if echo:
                 print(f"\nMetrics written to: {metrics_path}")
@@ -681,6 +737,39 @@ async def run_playwright_test_agent(
 
     output_text = "".join(transcript).strip()
     summary_text = summarize_execution_output(output_text, plan_markdown)
+
+    # Write per-MCP comparison summary after computing summary_text
+    if final_run_metrics is not None:
+        summary_obj = _build_comparison_summary(final_run_metrics, summary_text, mcp_id="playwright_mcp")
+        summary_path = MCP_DIR / "run.summary.json"
+        dump_metrics_to_file(summary_obj, summary_path)
+        # Append unified aggregator log entry
+        try:
+            agg_log = AGGREGATOR_LOG_PATH if AGGREGATOR_LOG_PATH.is_absolute() else (PROJECT_ROOT / AGGREGATOR_LOG_PATH).resolve()
+            agg_log.parent.mkdir(parents=True, exist_ok=True)
+            pass_count = summary_obj.get("run", {}).get("pass_fail", {}).get("pass")
+            fail_count = summary_obj.get("run", {}).get("pass_fail", {}).get("fail")
+            ratio = summary_obj.get("run", {}).get("pass_fail", {}).get("pass_ratio")
+            suites_total = summary_obj.get("run", {}).get("suite_total") or final_run_metrics.get("run", {}).get("suite_total")
+            input_tokens = summary_obj.get("run", {}).get("input_tokens")
+            output_tokens = summary_obj.get("run", {}).get("output_tokens")
+            entry_lines = [
+                f"# MCP Comparison Entry ({time.strftime('%Y-%m-%d %H:%M:%S')})",
+                f"MCP: playwright_mcp",
+                f"Plan: {final_run_metrics.get('run', {}).get('plan_path')}",
+                f"Suites: {suites_total}",
+                f"Tokens: input={input_tokens}, output={output_tokens}",
+                f"Pass/Fail: pass={pass_count}, fail={fail_count}, ratio={ratio}",
+                f"Metrics: {metrics_path}",
+                f"Log: {resolved_log}",
+                "---\n",
+            ]
+            with agg_log.open("a", encoding="utf-8") as f:
+                f.write("\n".join([str(x) for x in entry_lines]))
+        except Exception:
+            pass
+        if echo:
+            print(f"Summary written to: {summary_path}")
 
     with resolved_log.open("a", encoding="utf-8") as summary_file:
         summary_file.write("\n# Summary\n")

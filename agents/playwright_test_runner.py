@@ -41,11 +41,12 @@ ANTHROPIC_FOUNDRY_API_KEY = os.getenv("ANTHROPIC_FOUNDRY_API_KEY")
 
 DEFAULT_TEST_PLAN_PATH = Path("artifacts") / "playwright-test-plan.md"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+MCP_DIR = (PROJECT_ROOT / "artifacts" / "selenium_server1").resolve()
 
 DEFAULT_SERVER_COMMAND = ["python", "-m", "http.server", "8000"]
 DEFAULT_SERVER_CWD = Path("artifacts") / "digital-experience-healthcare"
 DEFAULT_BASE_URL = "http://localhost:8000"
-DEFAULT_LOG_PATH = Path("artifacts") / "playwright-run.log"
+DEFAULT_LOG_PATH = MCP_DIR / "run.log"
 SERVER_READY_TIMEOUT = 15
 SERVER_CHECK_INTERVAL = 0.5
 
@@ -554,12 +555,11 @@ async def run_playwright_test_agent(
         )
 
     transcript = []
-
+    MCP_DIR.mkdir(parents=True, exist_ok=True)
     log_target = log_path or DEFAULT_LOG_PATH
-    resolved_log = log_target if log_target.is_absolute() else (PROJECT_ROOT / log_target).resolve()
-    resolved_log.parent.mkdir(parents=True, exist_ok=True)
+    resolved_log = log_target if log_target.is_absolute() else (MCP_DIR / log_target.name).resolve()
     log_file_handle = resolved_log.open("w", encoding="utf-8")
-    metrics_path = resolved_log.with_suffix(".metrics.json")
+    metrics_path = MCP_DIR / "run.metrics.json"
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     log_file_handle.write(f"# Playwright Test Run\nStarted: {timestamp}\nPlan: {plan_path}\n\n")
 
@@ -570,7 +570,7 @@ async def run_playwright_test_agent(
         "allow_multiple_tool_calls": True,
     }
 
-    context_manager = client.create_agent(max_output_tokens=60000, **agent_kwargs)
+    context_manager = client.as_agent(max_output_tokens=60000, **agent_kwargs)
 
     metrics_data: dict[str, Any] | None = None
     metrics_error: Exception | None = None
@@ -664,6 +664,56 @@ async def run_playwright_test_agent(
             )
     dump_metrics_to_file(metrics_data, metrics_path)
 
+    # Write per-MCP comparison summary JSON for consistent outputs
+    def _build_comparison_summary(run_metrics: dict, summary_text: str, mcp_id: str) -> dict:
+        run = run_metrics.get("run", {}) or {}
+        suites = run_metrics.get("suites", []) or []
+        usage = run.get("usage", {}) or {}
+        shots = run.get("screenshots", {}) or {}
+        tool_counts: dict[str, int] = {}
+        for s in suites:
+            for tc in s.get("tool_calls", []) or []:
+                name = (tc.get("tool_name") or "").strip() or "(unknown)"
+                tool_counts[name] = tool_counts.get(name, 0) + 1
+        suite_stats = []
+        for s in suites:
+            u = s.get("usage", {}) or {}
+            suite_stats.append({
+                "suite_index": s.get("suite_index"),
+                "suite_name": s.get("suite_name"),
+                "seconds": s.get("duration_seconds"),
+                "updates": s.get("updates_count"),
+                "text_chars": s.get("total_text_chars"),
+                "tool_calls": len(s.get("tool_calls", []) or []),
+                "input_tokens": u.get("input_token_count", 0) or 0,
+                "output_tokens": u.get("output_token_count", 0) or 0,
+            })
+        st_low = (summary_text or "").lower()
+        pass_count = st_low.count(" pass ") + st_low.count(" passed ")
+        fail_count = st_low.count(" fail ") + st_low.count(" failed ")
+        total_checks = pass_count + fail_count
+        pass_ratio = (pass_count / total_checks) if total_checks > 0 else None
+        return {
+            "mcp": mcp_id,
+            "run": {
+                "duration_seconds": run.get("duration_seconds"),
+                "suite_total": run.get("suite_total"),
+                "input_tokens": usage.get("input_token_count", 0) or 0,
+                "output_tokens": usage.get("output_token_count", 0) or 0,
+                "screenshots": {
+                    "calls": shots.get("calls"),
+                    "estimated_input_tokens": shots.get("estimated_input_tokens"),
+                },
+                "pass_fail": {
+                    "pass": pass_count,
+                    "fail": fail_count,
+                    "pass_ratio": pass_ratio,
+                },
+            },
+            "tools": tool_counts,
+            "suites": suite_stats,
+        }
+
     if metrics_error:
         summary_text = summary_text.rstrip() + f"\n\nRun terminated with error: {metrics_error}\n"
 
@@ -671,6 +721,14 @@ async def run_playwright_test_agent(
         summary_file.write("\n# Summary\n")
         summary_file.write(summary_text)
         summary_file.write("\n")
+
+    # Persist per-MCP summary JSON with consistent naming
+    try:
+        summary_obj = _build_comparison_summary(metrics_data, summary_text, mcp_id="selenium_server1")
+        summary_path = MCP_DIR / "run.summary.json"
+        dump_metrics_to_file(summary_obj, summary_path)
+    except Exception:
+        pass
 
     result = {
         "plan_path": plan_display_path,

@@ -1,0 +1,103 @@
+{
+  "mcp": "playwright_mcp",
+  "run": {
+    "duration_seconds": 2041.392397099873,
+    "suite_total": 7,
+    "input_tokens": 7689260,
+    "output_tokens": 62142,
+    "screenshots": {
+      "calls": null,
+      "estimated_input_tokens": null
+    },
+    "pass_fail": {
+      "pass": 1,
+      "fail": 3,
+      "pass_ratio": 0.25
+    }
+  },
+  "tools": {
+    "browser_navigate": 26,
+    "browser_press_key": 2,
+    "browser_evaluate": 62,
+    "browser_run_code": 45,
+    "browser_click": 15,
+    "browser_snapshot": 7,
+    "browser_console_messages": 4,
+    "browser_take_screenshot": 5,
+    "browser_type": 5,
+    "browser_wait_for": 4,
+    "browser_select_option": 2
+  },
+  "suites": [
+    {
+      "suite_index": 1,
+      "suite_name": "Suite 1: Navigation & Accessibility",
+      "seconds": 310.88031799998134,
+      "updates": 3169,
+      "text_chars": 6716,
+      "tool_calls": 26,
+      "input_tokens": 928546,
+      "output_tokens": 8339
+    },
+    {
+      "suite_index": 2,
+      "suite_name": "Suite 2: Theme Toggle & Persistence",
+      "seconds": 129.46895899996161,
+      "updates": 1312,
+      "text_chars": 5296,
+      "tool_calls": 17,
+      "input_tokens": 377804,
+      "output_tokens": 3794
+    },
+    {
+      "suite_index": 3,
+      "suite_name": "Suite 3: Contact Form Validation",
+      "seconds": 252.23371349996887,
+      "updates": 4085,
+      "text_chars": 8888,
+      "tool_calls": 17,
+      "input_tokens": 811426,
+      "output_tokens": 9607
+    },
+    {
+      "suite_index": 4,
+      "suite_name": "Suite 4: Contact Form Submission",
+      "seconds": 261.80813000001945,
+      "updates": 3441,
+      "text_chars": 10532,
+      "tool_calls": 29,
+      "input_tokens": 1094322,
+      "output_tokens": 8653
+    },
+    {
+      "suite_index": 5,
+      "suite_name": "Suite 5: More Info - Search & Filter",
+      "seconds": 529.6164748000447,
+      "updates": 5289,
+      "text_chars": 13071,
+      "tool_calls": 37,
+      "input_tokens": 2201222,
+      "output_tokens": 13039
+    },
+    {
+      "suite_index": 6,
+      "suite_name": "Suite 6: More Info - FAQ & Tabs",
+      "seconds": 245.42359020002186,
+      "updates": 3230,
+      "text_chars": 9686,
+      "tool_calls": 28,
+      "input_tokens": 1132906,
+      "output_tokens": 8019
+    },
+    {
+      "suite_index": 7,
+      "suite_name": "Suite 7: Accessibility & Performance",
+      "seconds": 311.8720985997934,
+      "updates": 4256,
+      "text_chars": 10155,
+      "tool_calls": 23,
+      "input_tokens": 1143034,
+      "output_tokens": 10691
+    }
+  ]
+}
