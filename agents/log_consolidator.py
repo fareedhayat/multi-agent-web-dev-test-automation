@@ -377,7 +377,6 @@ def consolidate(workspace_root: str):
             "servers": servers_totals
         })
 
-    # Create JSON copy without per-scenario metrics
     scenarios_for_json: List[Dict[str, Any]] = []
     for sc in consolidated["scenarios"]:
         sc_copy = {
