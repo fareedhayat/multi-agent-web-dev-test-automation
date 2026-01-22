@@ -26,7 +26,6 @@ def compute_kpis(name: str, data: Dict[str, Any]) -> Dict[str, Any]:
     suite_durations = [s.get("duration_seconds", 0) or 0 for s in suites]
     avg_suite_duration = (sum(suite_durations) / len(suite_durations)) if suite_durations else None
 
-    # Aggregate tool call stats
     tool_calls: List[Dict[str, Any]] = []
     for s in suites:
         tool_calls.extend(s.get("tool_calls", []))
