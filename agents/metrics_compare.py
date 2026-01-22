@@ -74,12 +74,10 @@ def main() -> None:
     output_dir = os.path.join(base, "artifacts", "comparison")
     os.makedirs(output_dir, exist_ok=True)
 
-    # Write JSON comparison
     output_json = os.path.join(output_dir, "run.comparison.json")
     with open(output_json, "w", encoding="utf-8") as f:
         json.dump({"comparisons": results, "missing": missing}, f, indent=2)
 
-    # Write a concise Markdown summary (no screenshots)
     output_md = os.path.join(output_dir, "run.comparison.md")
     lines: List[str] = []
     lines.append("# MCP Comparison (Runtime, Tokens, Tools)\n")
