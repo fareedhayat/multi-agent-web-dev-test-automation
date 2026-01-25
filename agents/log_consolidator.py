@@ -341,8 +341,6 @@ def consolidate(workspace_root: str):
     os.makedirs(out_dir, exist_ok=True)
 
     json_path = os.path.join(out_dir, "consolidated_logs.json")
-    # Build suite totals for JSON output (tokens non-null at suite level)
-    # Determine suites in numeric order based on parsed suite number
     suites_map: Dict[str, str] = {}
     for sc in consolidated["scenarios"]:
         suite_str = sc.get("suite") or "(Unknown Suite)"
