@@ -80,7 +80,6 @@ def _extract_base64_length(value: Any) -> int:
             return 0
         if isinstance(value, str):
             s = value.strip()
-            # Data URI pattern
             idx = s.find("base64,")
             if idx != -1:
                 return len(s[idx + len("base64,"):])
