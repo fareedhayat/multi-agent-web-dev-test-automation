@@ -84,9 +84,6 @@ def _extract_base64_length(value: Any) -> int:
             idx = s.find("base64,")
             if idx != -1:
                 return len(s[idx + len("base64,"):])
-            # Fallback: treat long strings with base64-like charset as base64 payload
-            # (heuristic; won't be perfect, but good enough for estimates)
-            # Base64 valid chars set + padding '='
             b64_chars = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
             if len(s) > 64 and all(c in b64_chars for c in s[-64:]):
                 return len(s)
