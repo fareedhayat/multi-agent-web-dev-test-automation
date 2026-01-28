@@ -239,7 +239,6 @@ def consolidate(workspace_root: str):
                             if out_tok is not None:
                                 tokens_by_suite[suite_num]["output_tokens"] = out_tok
 
-        # Common top-level keys that could contain suites
         for key in ("suites", "suite_runs", "per_suites", "suiteList"):
             suites_list = data.get(key)
             extract_from_suites(suites_list)
@@ -256,7 +255,6 @@ def consolidate(workspace_root: str):
         server_suite_metrics[folder] = parse_summary(summary_path)
         server_suite_tokens[folder] = parse_metrics_tokens(metrics_path)
 
-    # Consolidate by scenario id
     scenarios_by_id = {}
     for folder, label in SERVERS:
         for s in server_logs.get(folder, []):
@@ -269,19 +267,16 @@ def consolidate(workspace_root: str):
                     "servers": {}
                 }
             entry = scenarios_by_id[sid]
-            # Prefer first encountered non-empty title/suite
             if not entry.get("title") and s.get("title"):
                 entry["title"] = s.get("title")
             if not entry.get("suite") and s.get("suite"):
                 entry["suite"] = s.get("suite")
-            # Determine suite number from suite string
             suite_str = s.get("suite") or ""
             m = re.search(r"Suite\s+(\d+)", suite_str)
             suite_num = m.group(1) if m else None
             sm = server_suite_metrics.get(folder, {})
             sm_for_suite = sm.get(suite_num or "", {}) if sm else {}
 
-            # Keep metrics in-memory for Markdown only; JSON will omit these per-scenario metrics
             entry["servers"][folder] = {
                 "label": dict(SERVERS).get(folder, folder),
                 "status": s.get("status"),
@@ -304,7 +299,6 @@ def consolidate(workspace_root: str):
         )
     }
 
-    # Compute per-server per-suite scenario counts to allow optional "estimated per case" metrics
     per_server_suite_counts: Dict[str, Dict[str, int]] = {k: {} for k, _ in SERVERS}
     for sc in consolidated["scenarios"]:
         suite_str = sc.get("suite") or ""
@@ -316,7 +310,6 @@ def consolidate(workspace_root: str):
             if sc["servers"].get(folder):
                 per_server_suite_counts[folder][suite_num] = per_server_suite_counts[folder].get(suite_num, 0) + 1
 
-    # Add estimated per-case fields
     for sc in consolidated["scenarios"]:
         suite_str = sc.get("suite") or ""
         m = re.search(r"Suite\s+(\d+)", suite_str)
@@ -353,12 +346,10 @@ def consolidate(workspace_root: str):
         suite_str = suites_map[suite_num]
         servers_totals: Dict[str, Any] = {}
         for folder, label in SERVERS:
-            # Duration from summary
             dur = None
             sm = server_suite_metrics.get(folder, {})
             if suite_num and sm.get(suite_num):
                 dur = sm[suite_num].get("duration_seconds")
-            # Tokens from metrics
             toks = server_suite_tokens.get(folder, {}).get(suite_num or "", {})
             in_tok = toks.get("input_tokens")
             out_tok = toks.get("output_tokens")
@@ -408,7 +399,6 @@ def consolidate(workspace_root: str):
         mf.write("# Consolidated Test Case Results\n\n")
         mf.write(f"Generated at: {consolidated['generated_at']}\n\n")
 
-        # Group scenarios by suite string to add suite-level totals at the end
         grouped: Dict[str, List[Dict[str, Any]]] = {}
         suite_num_name: Dict[str, str] = {}
         for sc in consolidated["scenarios"]:
@@ -416,14 +406,12 @@ def consolidate(workspace_root: str):
             m = re.search(r"Suite\s+(\d+)", suite_str or "")
             suite_num = m.group(1) if m else None
             if not suite_num:
-                # Skip scenarios that don't map to a numbered suite
                 continue
             if suite_str not in grouped:
                 grouped[suite_str] = []
                 suite_num_name[suite_num] = suite_str
             grouped[suite_str].append(sc)
 
-        # Sort suites by numeric suite number
         ordered_suite_nums = sorted(suite_num_name.keys(), key=lambda x: int(x))
         for suite_num in ordered_suite_nums:
             suite_str = suite_num_name[suite_num]
@@ -441,20 +429,14 @@ def consolidate(workspace_root: str):
                     notes = sv.get("notes") or []
                     for n in notes[:4]:
                         mf.write(f"  - {n}\n")
-                    # Omit per-scenario estimated metrics from Markdown per user request
                 mf.write("\n")
 
-            # Suite totals per server (duration from summary, tokens from metrics)
             mf.write("### Suite Totals\n")
-            # Extract suite number from string
-            # suite_num already known from loop
             for folder, label in SERVERS:
-                # Duration from summary parse
                 dur = None
                 sm = server_suite_metrics.get(folder, {})
                 if suite_num and sm.get(suite_num):
                     dur = sm[suite_num].get("duration_seconds")
-                # Tokens from metrics parse
                 toks = server_suite_tokens.get(folder, {}).get(suite_num or "", {})
                 in_tok = toks.get("input_tokens")
                 out_tok = toks.get("output_tokens")
