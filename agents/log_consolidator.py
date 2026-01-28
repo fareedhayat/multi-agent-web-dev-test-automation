@@ -331,12 +331,10 @@ def consolidate(workspace_root: str):
                 dur = metrics.get("suite_duration_seconds") or 0
                 it = metrics.get("suite_input_tokens") or 0
                 ot = metrics.get("suite_output_tokens") or 0
-                # Provide simple even split estimation
                 metrics["estimated_case_duration_seconds"] = (dur / count) if dur else None
                 metrics["estimated_case_input_tokens"] = (it // count) if it else None
                 metrics["estimated_case_output_tokens"] = (ot // count) if ot else None
 
-    # Write outputs
     out_dir = os.path.join(artifacts_dir, "comparison")
     os.makedirs(out_dir, exist_ok=True)
 
