@@ -68,13 +68,6 @@ def _safe_serialize(value: Any, *, limit: int = _MAX_STRING_PREVIEW) -> Any:
 
 
 def _extract_base64_length(value: Any) -> int:
-    """Best-effort detection of base64-encoded image content length.
-
-    - If a data URI string (e.g., "data:image/png;base64,<...>") is present, returns the length
-      of the base64 payload after "base64,".
-    - If a standalone base64 string is present, returns its string length.
-    - Recurses through dicts/lists to find any embedded base64 strings.
-    """
     try:
         if value is None:
             return 0
